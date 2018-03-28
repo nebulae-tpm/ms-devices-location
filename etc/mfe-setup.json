@@ -1,0 +1,43 @@
+[
+    {
+        "name": "devices-location",
+        "src": "frontend/emi/devices-location",
+        "groups": [
+            {
+                "id": "DEVICES",
+                "icon": "account_circle",
+                "translate": {
+                    "en": "Devices",
+                    "es": "Dispositivos"
+                },
+                "priority": 1000
+            }
+        ],
+        "contents": [
+            {
+                "groupId": "DEVICES",
+                "id": "devices-location",
+                "icon": "account_circle",
+                "translate": {
+                    "en": "Location",
+                    "es": "Ubicación"
+                },
+                "navURL": "/devices-location",
+                "path": "devices-location",
+                "loadChildren": "./main/content/devices-location/devices-location.module#DevicesLocationModule",
+                "priority": 1000
+            }
+        ],
+        "preBuildCommands": [
+            "npm install @types/googlemaps --save"            
+        ],
+        "environmentVars": {
+            "default": {
+            },
+            "local": {
+            },
+            "prod": {
+            }
+        }
+    }
+]

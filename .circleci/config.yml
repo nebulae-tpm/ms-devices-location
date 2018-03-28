@@ -1,0 +1,110 @@
+
+version: 2
+jobs:
+  register-microservice:
+    working_directory: /tmp/repo
+    docker:
+      - image: circleci/node:9.9.0
+        command: bash   
+    steps:
+      - checkout
+      - run:
+          name: Installing NebulaE-cli & Registering Micro-FrontEnd
+          command: |
+            echo $GCP_SERVICE_ACCOUNT_PROD | base64 --decode --ignore-garbage > /tmp/gcloud-service-key.json
+            npm config set prefix '~/.npm-global'
+            export PATH=~/.npm-global/bin:$PATH
+            source ~/.profile
+            npm install -g nebulae
+            nebulae register microfrontend --microservice-id=devices-location --frontend-id=emi --setup-file=/tmp/repo/etc/mfe-setup.json --store-type=GCP_DATASTORE --gcp-service-account-token=/tmp/gcloud-service-key.json            
+  build-frontend:    
+    working_directory: /tmp
+    docker:
+      - image: circleci/node:9.9.0
+        command: bash
+    steps:
+      - run:
+          name: Installing NebulaE cli & Compose FrontEnd
+          command: |
+            echo $GCP_SERVICE_ACCOUNT_PROD | base64 --decode --ignore-garbage > /tmp/gcloud-service-key.json
+            npm config set prefix '~/.npm-global'
+            export PATH=~/.npm-global/bin:$PATH
+            source ~/.profile
+            npm install -g nebulae
+            npm install -g @angular/cli
+            nebulae compose-ui production --shell-type=FUSE2_ANGULAR --shell-repo=https://github.com/nebulae-tpm/emi.git --frontend-id=emi --output-dir=/tmp/nebulae/emi/ --store-type=GCP_DATASTORE --gcp-service-account-token=/tmp/gcloud-service-key.json      
+            ls /tmp/nebulae/emi/dist
+      # Persist the specified paths (workspace/echo-output) into the workspace for use in downstream job. 
+      - persist_to_workspace:
+          # Must be an absolute path, or relative path from working_directory. This is a directory on the container which is 
+          # taken to be the root directory of the workspace.
+          root: /tmp/nebulae/emi
+          # Must be relative path from root
+          paths:
+            - dist  
+  build-docker:
+    working_directory: /tmp
+    docker:
+      - image: docker:17.05.0-ce-git
+    steps:    
+      - setup_remote_docker  
+      - attach_workspace:
+          at: /tmp
+      - run:
+          name:  push docker-hub
+          command: |      
+            ls /tmp/dist/ 
+            cd /tmp/
+            git clone https://github.com/nebulae-tpm/emi
+            export DOCKERHUB_NAMESPACE=$DOCKERHUB_NAMESPACE
+            export DOCKERHUB_USER=$DOCKERHUB_USER
+            export DOCKERHUB_IMAGE=emi
+            export DOCKERHUB_PASS=$DOCKERHUB_PASS
+            export FRONTEND_SHELL_PATH=/tmp/
+            cd /tmp/emi
+            sh /tmp/emi/deployment/docker/build-docker-hub.sh
+            echo $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE@$(docker pull $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE:latest | grep sha256 | cut -c 9-) > /tmp/DOCKERHUB_GENERATED_IMAGE_DIGEST
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - DOCKERHUB_GENERATED_IMAGE_DIGEST
+  deploy-prod:
+      working_directory: /tmp/workspace
+      docker:
+        - image: google/cloud-sdk:latest
+      steps:
+        - attach_workspace:
+            at: /tmp
+        - run:
+            name: Setup gcloud & kubectl
+            command: |
+              cd /tmp/
+              git clone https://github.com/nebulae-tpm/emi
+              echo $GCP_SERVICE_ACCOUNT_PROD | base64 --decode --ignore-garbage > /root/gcloud-service-key.json
+              gcloud auth activate-service-account --key-file /root/gcloud-service-key.json            
+              gcloud --quiet config set project $GKE_PROJECT_PROD
+              gcloud --quiet config set compute/zone $GKE_ZONE_PROD
+              gcloud --quiet container clusters get-credentials $GKE_CLUSTER
+        - run:
+            name: Deploy on Kubernetes
+            command: |
+              echo docker image DIGEST to set $(< /tmp/DOCKERHUB_GENERATED_IMAGE_DIGEST)
+              kubectl set image deployment/frontend-emi frontend-emi=$(< /tmp/DOCKERHUB_GENERATED_IMAGE_DIGEST)
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - register-microservice:
+          context: TPM
+      - build-frontend:
+          context: TPM
+          requires:
+            - register-microservice
+      - build-docker:
+          context: TPM
+          requires:
+            - build-frontend
+      - deploy-prod:
+          context: TPM
+          requires:
+            - build-docker
