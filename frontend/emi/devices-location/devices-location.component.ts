@@ -47,6 +47,10 @@ export class DevicesLocationComponent implements OnInit {
         position: { lat: lat, lng: lng },
         map: this.map
       });
+      let infoWindowContent = marker.infoWindow.getContent();
+      infoWindowContent =  infoWindowContent.toString().replace('$plate', 'TMP' + Math.floor((Math.random() * 10)) + Math.floor((Math.random() * 10)) + Math.floor((Math.random() * 10)) );
+      infoWindowContent = infoWindowContent.toString().replace('$serial', '' + Math.floor((Math.random() * 10)) + Math.floor((Math.random() * 10)) + Math.floor((Math.random() * 10)) + Math.floor((Math.random() * 10)) );
+      marker.infoWindow.setContent(infoWindowContent);
       this.addMarkerToMap(marker);
 
       console.log("MARKERS ==> " + this.markers.length);
@@ -91,7 +95,10 @@ export class DevicesLocationComponent implements OnInit {
 
   onMarkerClick(marker: MarkerRef, event) {
     console.log("Click on Marker...");
-    marker.updateLocation(-75.59703077796905, 6.174571880991593, 2000);
+   // marker.updateLocation(-75.59703077796905, 6.174571880991593, 2000);
+   this.markers.forEach(m => {
+    m.infoWindow.close();
+   });
     marker.infoWindow.open(this.map, marker);
   }
 

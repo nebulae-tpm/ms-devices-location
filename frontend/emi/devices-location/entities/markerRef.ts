@@ -27,21 +27,13 @@ export class MarkerRef extends google.maps.Marker {
   zindex_changedEvent = new  Rx.Subject();
 
 
-  contentString = '<div id="content">' +
-      '<div id="siteNotice">' +
-      '</div>' +
-      '<h1 id="firstHeading" class="firstHeading">Uluru</h1>' +
-      '<div id="bodyContent">' +
-      '<p><b>Uluru</b>, also referred to as <b>Ayers Rock</b>, is a large ' +
-      'Heritage Site.</p>' +
-      '<p>Attribution: Uluru, <a href="https://en.wikipedia.org/w/index.php?title=Uluru&oldid=297882194">' +
-      'https://en.wikipedia.org/w/index.php?title=Uluru</a> ' +
-      '(last visited June 22, 2009).</p>' +
-      '</div>' +
-      '</div>';
+  contentString = '<div> <h2>Detalles</h2>' +
+  '<p> <strong>Placa: </strong>$plate</p>' +
+  '<p> <strong>Vehículo: </strong>$serial</p>' +
+  '</div>';
 
   infoWindow =  new google.maps.InfoWindow({
-    content: ''
+    content: this.contentString
   });
 
 
@@ -49,7 +41,7 @@ export class MarkerRef extends google.maps.Marker {
     super(opts);
     this.setClickable(true);
     this.setLabel('');
-    this.setTitle('default Title');
+    this.setTitle('TPM Medellín');
     this.setDraggable(true);
     this.setIcon('./assets/devices-location/tpm_bus_3.png');
   }
