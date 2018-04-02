@@ -2,6 +2,10 @@
     {
         "name": "devices-location",
         "src": "frontend/emi/devices-location",
+        "assets" :"frontend/emi/devices-location/assets/devices-location",
+        "indexHeadAmends" : [
+            "<script src='https://maps.googleapis.com/maps/api/js?key=AIzaSyAWKVOt02pFVoLRe_zv0XJ_VpWnkKA7Txg' async defer></script>"
+        ],
         "groups": [
             {
                 "id": "DEVICES",
