@@ -48,9 +48,10 @@ export class MarkerRef extends google.maps.Marker {
   constructor(opts?: google.maps.MarkerOptions) {
     super(opts);
     this.setClickable(true);
-    this.setLabel('Default label');
+    this.setLabel('');
     this.setTitle('default Title');
     this.setDraggable(true);
+    this.setIcon('./assets/devices-location/tpm_bus_3.png');
   }
 
   updateLocation(lng: number, lat: number, delay: number): void {
