@@ -29,6 +29,7 @@
                 "navURL": "/devices-location",
                 "path": "devices-location",
                 "loadChildren": "./main/content/devices-location/devices-location.module#DevicesLocationModule",
+                "roles": ["operator"],
                 "priority": 1000
             }
         ],

@@ -13,12 +13,7 @@ const routes = [
 @NgModule({
     imports     : [
         SharedModule,
-        RouterModule.forChild(routes),
-        // AgmCoreModule.forRoot({
-        //   // apiKey: 'AIzaSyD81ecsCj4yYpcXSLFcYU97PvRsE_X8Bx8',
-        //   apiKey: 'AIzaSyAWKVOt02pFVoLRe_zv0XJ_VpWnkKA7Txg',
-        //   libraries: ['places']
-        // })
+        RouterModule.forChild(routes)
     ],
     declarations: [
         DevicesLocationComponent
