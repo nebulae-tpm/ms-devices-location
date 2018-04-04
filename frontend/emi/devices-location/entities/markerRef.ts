@@ -27,7 +27,7 @@ export class MarkerRef extends google.maps.Marker {
   zindex_changedEvent = new  Rx.Subject();
 
 
-  contentString = '<div> <h2>Detalles</h2>' +
+  contentString = '<div> <h2>Detalles del vehículo</h2>' +
   '<p> <strong>Placa: </strong>$plate</p>' +
   '<p> <strong>Vehículo: </strong>$serial</p>' +
   '</div>';
@@ -35,6 +35,11 @@ export class MarkerRef extends google.maps.Marker {
   infoWindow =  new google.maps.InfoWindow({
     content: this.contentString
   });
+  vehicle = {
+    plate: '',
+    serial: ''
+  };
+
 
 
   constructor(opts?: google.maps.MarkerOptions) {
@@ -43,7 +48,7 @@ export class MarkerRef extends google.maps.Marker {
     this.setLabel('');
     this.setTitle('TPM Medellín');
     this.setDraggable(true);
-    this.setIcon('./assets/devices-location/tpm_bus_3.png');
+    this.setIcon('./assets/devices-location/tpm_bus_30_30.png');
   }
 
   updateLocation(lng: number, lat: number, delay: number): void {
@@ -92,3 +97,8 @@ export class MarkerRef extends google.maps.Marker {
   }
 
 }
+
+export const MarkerRefInfoWindowContent = '<div> <h2>{TITLE}</h2>' +
+'<p> <strong>{PLATE}: </strong>$plate</p>' +
+'<p> <strong>{VEHICLE}: </strong>$serial</p>' +
+'</div>'

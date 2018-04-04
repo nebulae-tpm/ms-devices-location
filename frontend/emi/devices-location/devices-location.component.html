@@ -7,7 +7,7 @@
       <mat-icon class="icon s-24">search</mat-icon>
     </div>
     <mat-form-field class="w-100-p">
-      <input #search autocorrect="off" autocapitalize="off" spellcheck="off" matInput type="text">
+      <input id="pac-input" #input matInput autocorrect="off" placeholder="{{ 'MAPS.SEARCH_PLACEHOLDER' | translate }}" autocapitalize="off" spellcheck="off" type="text">
     </mat-form-field>
 
   </div>
