@@ -1,0 +1,8 @@
+[
+    {
+        "name": "devices-location",
+        "type": "graphql",        
+        "src": "api/gateway/graphql/devices-location",
+        "preBuildCommands": []
+    }
+]
