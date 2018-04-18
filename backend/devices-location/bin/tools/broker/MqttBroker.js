@@ -93,7 +93,7 @@ class MqttBroker {
     getMessageListener$(topics = [], types = [], ignoreSelfEvents = true) {
         return this.configMessageListener$(topics)
             .switchMap(() =>
-                this.incomingMessages$
+                this.incomingMessages$                
                     .filter(msg => msg)
                     .filter(msg => !ignoreSelfEvents || msg.attributes.senderId !== this.senderId)
                     .filter(msg => topics.length === 0 || topics.indexOf(msg.topic) > -1)

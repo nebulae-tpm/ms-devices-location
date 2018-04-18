@@ -35,15 +35,17 @@ export class MarkerRef extends google.maps.Marker {
   infoWindow =  new google.maps.InfoWindow({
     content: this.contentString
   });
-  vehicle = {
-    plate: '',
-    serial: ''
-  };
+  // vehicle = {
+  //   plate: '',
+  //   serial: ''
+  // };
 
+  vehicle = null;
 
 
   constructor(opts?: google.maps.MarkerOptions) {
     super(opts);
+    console.log('Marker constructor');
     this.setClickable(true);
     this.setLabel('');
     this.setTitle('TPM Medellín');
@@ -52,6 +54,7 @@ export class MarkerRef extends google.maps.Marker {
   }
 
   updateLocation(lng: number, lat: number, delay: number): void {
+    console.log('Update location -> '+ lng + " -- "+ lat);
     // X refer to logitude
     // Y refer to latitude
     this.setVisibility(100);

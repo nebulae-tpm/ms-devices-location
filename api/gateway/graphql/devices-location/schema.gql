@@ -1,29 +1,22 @@
-type Author {
-  id: String! # the ! means that every author object _must_ have an id
-  firstName: String
-  lastName: String
-  age: Int
+"Device Location report"
+type DeviceLocationReportedEvent {
+  "Device ID"
+  deviceId: Int
+  "Timestamp when the device sent its location"
+  timeStamp: BigInt
+  "Longitude coordinates"
+  lng: Float
+  "Latitude coordinates"
+  lat: Float
+  "License plate of the vehicle"
+  plate: String
 }
 
-type AuthorEvent {
-  id: Int! # the ! means that every author object _must_ have an id
-  timestamp: String
-}
-
-# the schema allows the following two queries:
 type Query {
-  author(firstName: String, lastName: String): Author
-}
-
-# this schema allows the following two mutations:
-type Mutation {
-  createAuthor(
-    firstName: String!
-    lastName: String!
-  ): Author
+  "Get a report summary of location devices."
+  getDevicesLocation(page: Int, count: Int): [DeviceLocationReportedEvent]
 }
 
 type Subscription {
-  authorAdded: Author,
-  authorEvent(odd: Boolean!): AuthorEvent
+  deviceLocationReportedEvent: DeviceLocationReportedEvent
 }

@@ -1,3 +1,6 @@
+import { Subscription } from 'rxjs/Subscription';
+import { Observable } from 'rxjs/Observable';
+import { DevicesLocationService } from './devices-location.service';
 import { MapRef } from "./entities/agmMapRef";
 import { MarkerRef, MarkerRefInfoWindowContent } from "./entities/markerRef";
 import {
@@ -35,45 +38,59 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
   @ViewChild('input') input: ElementRef;
   map: MapRef;
 
+  deviceLocationSubscription: Subscription;
   markers: MarkerRef[] = [];
 
   constructor( private translationLoader: FuseTranslationLoaderService,
-    private translate: TranslateService){
+    private translate: TranslateService, private devicesLocationService: DevicesLocationService){
     this.translationLoader.loadTranslations(english, spanish);
   }
 
   ngOnInit(): void {
     this.initMap();
     this.initAutocomplete();
-    this.timerSubscription = this.timer.subscribe(t => {
-      const lat = 6.1701312 + Math.random() / 50 + 2 / 900;
-      const lng = -75.6058417 + Math.random() / 50 + 2 / 900;
+    // this.timerSubscription = this.timer.subscribe(t => {
+    //   const lat = 6.1701312 + Math.random() / 50 + 2 / 900;
+    //   const lng = -75.6058417 + Math.random() / 50 + 2 / 900;
 
-      const marker = new MarkerRef({
-        position: { lat: lat, lng: lng },
-        map: this.map
+    //   const marker = new MarkerRef({
+    //     position: { lat: lat, lng: lng },
+    //     map: this.map
+    //   });
+    //   let infoWindowContent = marker.infoWindow.getContent();
+
+    //   marker.vehicle.plate = this.getRandomNumber(3);
+    //   marker.vehicle.serial = this.getRandomNumber(4);
+    //   infoWindowContent =  infoWindowContent.toString().replace('$plate', 'TMP' + marker.vehicle.plate );
+    //   infoWindowContent = infoWindowContent.toString().replace('$serial', '' + marker.vehicle.serial );
+    //   marker.infoWindow.setContent(infoWindowContent);
+    //   this.addMarkerToMap(marker);
+
+    //   if (t >= 3) {
+
+    //     Rx.Observable.interval(4000).subscribe( (turn) => {
+    //       const pos = turn % this.markers.length;
+    //       this.markers[pos].updateLocation(
+    //         -75.60 + Math.random() / 50 + 2 / 500,
+    //          6.17 + Math.random() / 50 + 2 / 500,
+    //          1000 );
+    //     });
+
+    //     this.timerSubscription.unsubscribe();
+    //   }
+    // });
+
+    this.deviceLocationSubscription = this.devicesLocationService
+    .subscribeDeviceLocation()
+    .subscribe(deviceLocation=>{
+      this.manageMarkers(deviceLocation.data.deviceLocationReportedEvent);
+    });
+
+    this.devicesLocationService.getDevicesLocation(0, 100).subscribe(devicesLocation => {
+      Observable.from(devicesLocation.data.getDevicesLocation)
+      .forEach(deviceLocation => {
+        this.manageMarkers(deviceLocation);
       });
-      let infoWindowContent = marker.infoWindow.getContent();
-
-      marker.vehicle.plate = this.getRandomNumber(3);
-      marker.vehicle.serial = this.getRandomNumber(4);
-      infoWindowContent =  infoWindowContent.toString().replace('$plate', 'TMP' + marker.vehicle.plate );
-      infoWindowContent = infoWindowContent.toString().replace('$serial', '' + marker.vehicle.serial );
-      marker.infoWindow.setContent(infoWindowContent);
-      this.addMarkerToMap(marker);
-
-      if (t >= 3) {
-
-        Rx.Observable.interval(4000).subscribe( (turn) => {
-          const pos = turn % this.markers.length;
-          this.markers[pos].updateLocation(
-            -75.60 + Math.random() / 50 + 2 / 500,
-             6.17 + Math.random() / 50 + 2 / 500,
-             1000 );
-        });
-
-        this.timerSubscription.unsubscribe();
-      }
     });
 
     this.translate.onLangChange.subscribe(lang => {
@@ -92,6 +109,30 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
 
+  }
+
+  manageMarkers(deviceLocation){
+    Observable.from(this.markers)
+        .filter(marker => {
+          return marker.vehicle.serial == deviceLocation.deviceId;
+        })
+        .defaultIfEmpty(
+          new MarkerRef({
+            position: {
+              lat: parseFloat(deviceLocation.lat),
+              lng: parseFloat(deviceLocation.lng)
+            }, map: null
+          })
+        )
+        .first()
+        .subscribe(marker => {
+          if(!marker.vehicle){
+            marker.setMap(this.map);
+            this.addMarker(marker, deviceLocation.plate, deviceLocation.deviceId);
+          } else {
+            marker.updateLocation(deviceLocation.lng, deviceLocation.lat, 1000);
+          }
+        })
   }
 
   initAutocomplete(){
@@ -134,6 +175,20 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     };
 
     this.map = new MapRef(this.gmapElement.nativeElement, mapOptions);
+  }
+
+  addMarker(marker: MarkerRef, plate, serialNumber){
+    let infoWindowContent = marker.infoWindow.getContent();
+
+    marker.vehicle = {
+      plate: plate,
+      serial: serialNumber
+    };
+
+    infoWindowContent =  infoWindowContent.toString().replace('$plate', 'TMP' + marker.vehicle.plate );
+    infoWindowContent = infoWindowContent.toString().replace('$serial', '' + marker.vehicle.serial );
+    marker.infoWindow.setContent(infoWindowContent);
+    this.addMarkerToMap(marker);
   }
 
   addMarkerToMap(marker: MarkerRef) {
