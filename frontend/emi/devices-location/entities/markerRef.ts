@@ -2,6 +2,11 @@
 import * as Rx from 'rxjs/Rx';
 import {} from 'googlemaps';
 
+export class Vehicle{
+    plate: '';
+    serial: ''
+}
+
 export class MarkerRef extends google.maps.Marker {
 
   animation_changedEvent = new  Rx.Subject();
@@ -43,14 +48,14 @@ export class MarkerRef extends google.maps.Marker {
   vehicle = null;
 
 
-  constructor(opts?: google.maps.MarkerOptions) {
+  constructor(vehicle: Vehicle, opts?: google.maps.MarkerOptions) {
     super(opts);
-    console.log('Marker constructor');
     this.setClickable(true);
     this.setLabel('');
     this.setTitle('TPM Medellín');
     this.setDraggable(true);
     this.setIcon('./assets/devices-location/tpm_bus_30_30.png');
+    this.vehicle = vehicle;
   }
 
   updateLocation(lng: number, lat: number, delay: number): void {

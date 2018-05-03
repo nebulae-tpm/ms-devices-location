@@ -31,8 +31,11 @@ class EventStoreService {
             () => console.log('EventStore incoming event subscription completed');
         }
 
-        return Rx.Observable.of(
-            { aggregateType: 'Device', eventType: 'DeviceLocationReported', onErrorHandler, onCompleteHandler },
+        return Rx.Observable.from(
+            [
+                { aggregateType: 'Device', eventType: 'DeviceDeviceStateReported', onErrorHandler, onCompleteHandler },
+                { aggregateType: 'Device', eventType: 'DeviceLocationReported', onErrorHandler, onCompleteHandler }
+            ],
         ).map(params => this.subscribeEventHandler(params));
     }
 
@@ -57,7 +60,7 @@ class EventStoreService {
         const handler = this.functionMap[eventType];
         const subscription = eventSourcing.eventStore.getEventListener$(aggregateType)
             .do(val => {
-                console.log('Event sourcing => '+ val);
+                console.log('Event sourcing => '+ JSON.stringify(val));
             })
             .filter(evt => evt.et === eventType)
             .mergeMap(evt => handler.fn.call(handler.obj, evt))
@@ -75,7 +78,8 @@ class EventStoreService {
      */
     generateFunctionMap() {
         return {
-            'DeviceLocationReported': { fn: deviceLocation.updateDeviceLocation$, obj: deviceLocation }
+            'DeviceLocationReported': { fn: deviceLocation.updateDeviceLocation$, obj: deviceLocation },
+            'DeviceDeviceStateReported': { fn: deviceLocation.updateDeviceData$, obj: deviceLocation }
         };
     }
 

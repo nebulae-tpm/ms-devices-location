@@ -4,11 +4,11 @@ import gql from 'graphql-tag';
 export const getDevicesLocation = gql`
     query getDevicesLocation($page: Int!, $count:Int!){
         getDevicesLocation(page: $page, count: $count){
-            deviceId
-            timeStamp
+            id
+            timestamp
             lng
             lat
-            plate
+            hostname
         }
     }
 `;
@@ -17,11 +17,11 @@ export const getDevicesLocation = gql`
 export const deviceLocationReportedEvent = gql`
     subscription{
         deviceLocationReportedEvent{
-            deviceId
-            timeStamp
+            id
+            timestamp
             lng
             lat
-            plate
+            hostname
         }
     }
 `;

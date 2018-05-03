@@ -12,7 +12,7 @@ class DeviceLocationDA {
      */
     static getDevicesLocation$(page, count) {
         const collection = mongoDB.db.collection(collectionName);
-        return Rx.Observable.fromPromise(collection.find({}).skip(page*count).limit(count).toArray());
+        return Rx.Observable.fromPromise(collection.find({loc: {$exists: true}}).skip(page*count).limit(count).toArray());
     }
 
     /**
@@ -23,9 +23,38 @@ class DeviceLocationDA {
         const collection = mongoDB.db.collection(collectionName);
         return Rx.Observable.bindNodeCallback(collection.findOneAndUpdate.bind(collection))(
             {
-                deviceId: deviceLocationReported.deviceId
+                id: deviceLocationReported.aid
             },
-            { geojson: deviceLocationReported.geojson, plate: deviceLocationReported.plate, deviceId: deviceLocationReported.deviceId, timeStamp: deviceLocationReported.timeStamp},
+            {
+                $set: { 
+                loc: deviceLocationReported.loc, 
+                id: deviceLocationReported.aid, 
+                timestamp: deviceLocationReported.timestamp, 
+                version: deviceLocationReported.version}
+            },
+            {
+                upsert: true,
+                returnOriginal: false
+            }
+        ).map(result => result && result.value ? result.value : undefined);
+    }
+
+    /**
+     * Updates the device data
+     * @param {*} deviceDataReported Data reported by the device
+     */
+    static updateDeviceData$(deviceDataReported){
+        const collection = mongoDB.db.collection(collectionName);
+        return Rx.Observable.bindNodeCallback(collection.findOneAndUpdate.bind(collection))(
+            {
+                id: deviceDataReported.aid
+            },
+            { $set :{ 
+                hostname: deviceDataReported.hostname, 
+                id: deviceDataReported.aid, 
+                type: deviceDataReported.type, 
+                version: deviceDataReported.version
+            }},
             {
                 upsert: true,
                 returnOriginal: false

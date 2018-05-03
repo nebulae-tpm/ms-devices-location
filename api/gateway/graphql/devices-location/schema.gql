@@ -1,15 +1,15 @@
 "Device Location report"
 type DeviceLocationReportedEvent {
   "Device ID"
-  deviceId: Int
+  id: String
   "Timestamp when the device sent its location"
-  timeStamp: BigInt
+  timestamp: BigInt
   "Longitude coordinates"
   lng: Float
   "Latitude coordinates"
   lat: Float
-  "License plate of the vehicle"
-  plate: String
+  "Hostname of the device"
+  hostname: String
 }
 
 type Query {
