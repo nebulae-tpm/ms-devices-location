@@ -14,7 +14,8 @@ const start = () => {
     Rx.Observable.concat(
         eventSourcing.eventStore.start$(),
         eventStoreService.start$(),
-        mongoDB.start$()
+        mongoDB.start$(),
+        graphQlService.start$()
     ).subscribe(
         (evt) => console.log(evt),
         (error) => {
@@ -26,7 +27,6 @@ const start = () => {
 };
 
 start();
-graphQlService.start();
 // mongoDB.init$().subscribe(
 //     (str) => console.log(str),
 //     (error) => console.error(`Failed to connect to MongoDB`,error),

@@ -11,8 +11,8 @@ let instance;
 class GraphQlService {
 
     constructor() {
-        this.functionMap = this.generateFunctionMap();   
-        this.subscriptions = [];     
+        this.functionMap = this.generateFunctionMap();
+        this.subscriptions = [];
     }
 
     generateFunctionMap() {
@@ -21,34 +21,44 @@ class GraphQlService {
         };
     }
 
-    start() {
-        broker.getMessageListener$(['Device'], Object.keys(this.functionMap))
-            //decode and verify the jwt token
-            .map(message => { return { authToken: jsonwebtoken.verify(message.data.jwt, jwtPublicKey), message }; })
-            //ROUTE MESSAGE TO RESOLVER
-            .mergeMap(({ authToken, message }) =>
-                this.functionMap[message.type](message.data, authToken)
-                    .map(response => {
-                        return { response, correlationId: message.id, replyTo: message.attributes.replyTo };
-                    })
-            )
-            //send response back if neccesary
-            .subscribe(
-                ({ response, correlationId, replyTo }) => {
-                    // broker.send$('MaterializedViewUpdates','gateway.graphql.Subscription.response',response);
-                    if (replyTo) {
-                        broker.send$(replyTo, 'gateway.graphql.Query.response', response, { correlationId });                        
+    start$() {
+        return Rx.Observable.create(observer => {
+            this.subscription = broker.getMessageListener$(['Device'], Object.keys(this.functionMap))
+                //decode and verify the jwt token
+                .map(message => { return { authToken: jsonwebtoken.verify(message.data.jwt, jwtPublicKey), message }; })
+                //ROUTE MESSAGE TO RESOLVER
+                .mergeMap(({ authToken, message }) =>
+                    this.functionMap[message.type](message.data, authToken)
+                        .map(response => {
+                            return { response, correlationId: message.id, replyTo: message.attributes.replyTo };
+                        })
+                )
+                //send response back if neccesary
+                .subscribe(
+                    ({ response, correlationId, replyTo }) => {
+                        // broker.send$('MaterializedViewUpdates','gateway.graphql.Subscription.response',response);
+                        if (replyTo) {
+                            broker.send$(replyTo, 'gateway.graphql.Query.response', response, { correlationId });
+                        }
+                    },
+                    (error) => console.error('Error listening to messages', error),
+                    () => {
+                        console.log(`Message listener stopped`);
                     }
-                },
-                (error) => console.error('Error listening to messages', error),
-                () => {
-                    console.log(`Message listener stopped`);
-                }
-            );
+                );
+            observer.next('GraphQlService is listening to Device topic');
+            observer.complete();
+
+        });
+
     }
 
-    stop() {
-
+    stop$() {
+        return Rx.Observable.create(observer => {
+            this.subscription.unsubscribe();
+            observer.next('GraphQlService stopped listening to messages')
+            observer.complete();
+        });
     }
 
 }
