@@ -39,7 +39,7 @@ spec:
           value: EventStore
         # INTERNAL MONGO DB CONFIG
         - name: MONGODB_URL
-          value: mongodb://dev-location-mongo:27017
+          value: mongodb://dev-loc-mongo:27017
         - name: MONGODB_DB_NAME
           value: DevicesLocation
         # JWT CONGIF        
