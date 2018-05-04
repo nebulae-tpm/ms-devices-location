@@ -50,6 +50,8 @@ spec:
           value: gateway-replies-topic-mbe-devices-location
         - name: REPLY_TIMEOUT
           value: '2000'
+        - name: BROKER_TYPE
+          value: PUBSUB
         
       volumes:
       - name: google-application-credentials
