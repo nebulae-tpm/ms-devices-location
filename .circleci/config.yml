@@ -170,6 +170,6 @@ workflows:
       - deploy-prod:
           context: TPM
           requires:
-            - build-frontend
-            - build-api
+#            - build-frontend
+#            - build-api
             - build-backend
