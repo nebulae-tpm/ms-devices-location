@@ -15,7 +15,7 @@ spec:
         app: dev-location
     spec:      
       containers:
-      - image: nebulaetpm/devices-location.backend.devices-location:0.0.2
+      - image: nebulaetpm/devices-location.backend.devices-location:0.0.3
         name: dev-location
         volumeMounts:
         - name: google-application-credentials
@@ -54,5 +54,5 @@ spec:
       volumes:
       - name: google-application-credentials
         secret:
-          secretName: google-application-credentials       
+          secretName: google-application-credentials
       

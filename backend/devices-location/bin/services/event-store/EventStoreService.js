@@ -63,7 +63,7 @@ class EventStoreService {
                 console.log('Event sourcing => '+ JSON.stringify(val));
             })
             .filter(evt => evt.et === eventType)
-            .mergeMap(evt => handler.fn.call(handler.obj, evt))
+            .mergeMap(evt => handler.fn.call(handler.obj, evt)) 
             .subscribe(
                 (evt) => console.log(`EventStoreService: ${eventType} process: ${evt}`),
                 onErrorHandler,
