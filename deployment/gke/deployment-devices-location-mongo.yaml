@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dev-loc-mongo
+spec:
+  ports:
+  - port: 27017
+    name: dev-loc-mongo
+  selector:
+    app: dev-loc-mongo
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dev-loc-mongo-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 0.5Gi
+---
+apiVersion: apps/v1beta2 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: dev-loc-mongo
+spec:
+  selector:
+    matchLabels:
+      app: dev-loc-mongo
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: dev-loc-mongo
+    spec:
+      containers:
+      - image: mongo:3.7-jessie
+        name: dev-loc-mongo        
+        ports:
+        - containerPort: 27017
+          name: dev-loc-mongo
+        volumeMounts:
+        - name: dev-loc-mongo-persistent-storage
+          mountPath: /data/db
+      volumes:
+      - name: dev-loc-mongo-persistent-storage
+        persistentVolumeClaim:
+          claimName: dev-loc-mongo-pv-claim
