@@ -42,6 +42,7 @@ jobs:
           name: Build docker image and push it to hub
           command: |
             source ~/nebulae/repo/.circleci/scripts/gitChanged.sh
+            cd ~/nebulae/repo/
             gitChanged frontend || ( mkdir -p ~/nebulae/frontend && cd  ~/nebulae/frontend/ && git clone https://github.com/nebulae-tpm/emi --depth=1 --directory=shell)      
             gitChanged frontend || ls ~/nebulae/frontend/emi/dist/ 
             gitChanged frontend || export DOCKERHUB_IMAGE=emi
