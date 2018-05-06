@@ -1,7 +1,7 @@
 import { Subscription } from 'rxjs/Subscription';
 import { Injectable } from '@angular/core';
 import {
-  ActivatedRouteSnapshot,
+  ActivatedRouteSnapshot,  
   RouterStateSnapshot
 } from '@angular/router';
 import { GatewayService } from '../../../api/gateway.service';

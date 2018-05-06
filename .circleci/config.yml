@@ -43,12 +43,13 @@ jobs:
           command: |
             source ~/nebulae/repo/.circleci/scripts/gitChanged.sh
             cd ~/nebulae/repo/
-            gitChanged frontend || ( mkdir -p ~/nebulae/frontend && cd  ~/nebulae/frontend/ && git clone https://github.com/nebulae-tpm/emi --depth=1 --directory=shell)      
+            mkdir -p ~/nebulae/frontend
+            gitChanged frontend || ( cd  ~/nebulae/frontend/ && git clone https://github.com/nebulae-tpm/emi --depth=1 && cd ~/nebulae/repo/ )      
             gitChanged frontend || ls ~/nebulae/frontend/emi/dist/ 
             gitChanged frontend || export DOCKERHUB_IMAGE=emi
             gitChanged frontend || export FRONTEND_SHELL_PATH=~/nebulae/frontend/emi/
             gitChanged frontend || cd ~/nebulae/repo
-            gitChanged frontend || sh ~/nebulae/frontend/shell/deployment/docker/build-docker-hub.sh
+            gitChanged frontend || sh ~/nebulae/frontend/emi/deployment/docker/build-docker-hub.sh
             gitChanged frontend || echo $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE@$(docker pull $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE:latest | grep sha256 | cut -c 9-) > ~/nebulae/frontend/DOCKERHUB_GENERATED_IMAGE_DIGEST
       - persist_to_workspace:
           root: ~/nebulae/
