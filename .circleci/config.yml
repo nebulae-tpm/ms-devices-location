@@ -24,7 +24,7 @@ jobs:
       - attach_workspace:
           at: ~/nebulae
       - run:
-          name: Installing NebulaE cli
+          name: Register Micr-FrontEnd + Compose UI
           command: |            
             source ~/nebulae/repo/.circleci/scripts/gitChanged.sh
             cd ~/nebulae/repo/            
@@ -34,17 +34,9 @@ jobs:
             gitChanged frontend || source ~/.profile
             gitChanged frontend || npm install -g @nebulae/cli
             gitChanged frontend || npm install -g @angular/cli
-      - run:
-          name: Register micro-frontend
-          command: |       
-            source ~/nebulae/repo/.circleci/scripts/gitChanged.sh     
             gitChanged frontend || nebulae register microfrontend --microservice-id=devices-location --frontend-id=emi --setup-file=~/nebulae/repo/etc/mfe-setup.json --store-type=GCP_DATASTORE --gcp-service-account-token=/tmp/gcloud-service-key.json            
-      - run:
-          name: Compose FrontEnd
-          command: |       
-            source ~/nebulae/repo/.circleci/scripts/gitChanged.sh                 
             gitChanged frontend || nebulae compose-ui production --shell-type=FUSE2_ANGULAR --shell-repo=https://github.com/nebulae-tpm/emi.git --frontend-id=emi --output-dir=~/nebulae/frontend/emi/ --store-type=GCP_DATASTORE --gcp-service-account-token=/tmp/gcloud-service-key.json
-            gitChanged frontend || ls ~/nebulae/frontend/emi/
+            gitChanged frontend || ls ~/nebulae/frontend/emi/            
       - setup_remote_docker
       - run:
           name: Build docker image and push it to hub
