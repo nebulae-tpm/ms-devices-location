@@ -155,10 +155,10 @@ workflows:
     jobs:
       - prepare:
           context: TPM
-#      - build-frontend:
-#          context: TPM
-#          requires:
-#            - prepare
+      - build-frontend:
+          context: TPM
+          requires:
+            - prepare
 #      - build-api:
 #          context: TPM
 #          requires:
@@ -170,6 +170,6 @@ workflows:
       - deploy-prod:
           context: TPM
           requires:
-#            - build-frontend
+            - build-frontend
 #            - build-api
             - build-backend
