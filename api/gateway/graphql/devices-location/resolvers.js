@@ -8,7 +8,7 @@ module.exports = {
     getDevicesLocation(root, args, context) {
       return context.broker
         .forwardAndGetReply$(
-          'Device',
+          'projects/ne-tpm-prod/topics/Device',
           'gateway.graphql.query.getDevicesLocation',
           { root, args, jwt: context.encodedToken },
           500
