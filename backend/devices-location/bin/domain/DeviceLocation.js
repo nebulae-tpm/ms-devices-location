@@ -19,7 +19,7 @@ class DeviceLocation {
         return DeviceLocationDA.getDevicesLocation$(args.page, args.count)
         .mergeMap(devicesLocations => Rx.Observable.from(devicesLocations))
         .map(deviceLocation => {
-            console.log('deviceLocation => ', deviceLocation);       
+            console.log('deviceLocation1 => ', deviceLocation);       
             const deviceLocationReportedEvent = {
                 id: deviceLocation.id, 
                 timestamp: deviceLocation.timestamp,
