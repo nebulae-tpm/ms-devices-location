@@ -24,6 +24,7 @@ class GraphQlService {
     start$() {
         return Rx.Observable.create(observer => {
             this.subscription = broker.getMessageListener$(['Device'], Object.keys(this.functionMap))
+                .do(val => console.log("MessageListener ==> ", val))
                 //decode and verify the jwt token
                 .map(message => { return { authToken: jsonwebtoken.verify(message.data.jwt, jwtPublicKey), message }; })
                 //ROUTE MESSAGE TO RESOLVER

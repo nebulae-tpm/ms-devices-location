@@ -83,6 +83,7 @@ class PubSubBroker {
             .switchMap(() =>
                 this.incomingMessages$
                     .filter(msg => msg)
+                    .do(msg => console.log("All message listener ", msg))
                     .filter(msg => !ignoreSelfEvents || msg.attributes.senderId !== this.senderId)
                     .filter(msg => topics.length === 0 || topics.indexOf(msg.topic) > -1)
                     .filter(msg => types.length === 0 || types.indexOf(msg.type) > -1)
