@@ -20,4 +20,3 @@ type Query {
 type Subscription {
   deviceLocationReportedEvent: DeviceLocationReportedEvent
 }
-
