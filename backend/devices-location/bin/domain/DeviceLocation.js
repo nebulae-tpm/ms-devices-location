@@ -15,10 +15,11 @@ class DeviceLocation {
      * @param {*} param0 
      * @param {*} authToken 
      */
-    getDevicesLocation$({ root, args, jwt }, authToken) {        
+    getDevicesLocation$({ root, args, jwt }, authToken) { 
         return DeviceLocationDA.getDevicesLocation$(args.page, args.count)
         .mergeMap(devicesLocations => Rx.Observable.from(devicesLocations))
         .map(deviceLocation => {
+            console.log('deviceLocation => ', deviceLocation);       
             const deviceLocationReportedEvent = {
                 id: deviceLocation.id, 
                 timestamp: deviceLocation.timestamp,

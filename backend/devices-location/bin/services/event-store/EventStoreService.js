@@ -59,9 +59,9 @@ class EventStoreService {
     subscribeEventHandler({ aggregateType, eventType, onErrorHandler, onCompleteHandler }) {        
         const handler = this.functionMap[eventType];
         const subscription = eventSourcing.eventStore.getEventListener$(aggregateType)
-            .do(val => {
-                console.log('Event sourcing => '+ JSON.stringify(val));
-            })
+            // .do(val => {
+            //     console.log('Event sourcing => '+ JSON.stringify(val));
+            // })
             .filter(evt => evt.et === eventType)
             .mergeMap(evt => handler.fn.call(handler.obj, evt)) 
             .subscribe(
