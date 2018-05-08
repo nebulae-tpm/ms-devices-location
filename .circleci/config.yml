@@ -75,8 +75,8 @@ jobs:
             gitChanged api || source ~/.profile
             gitChanged api || npm install -g @nebulae/cli
             gitChanged api || nebulae register microapi --microservice-id=devices-location --api-id=gateway --setup-file=/home/circleci/nebulae/repo/etc/mapi-setup.json --store-type=GCP_DATASTORE --gcp-service-account-token=/tmp/gcloud-service-key.json            
-            gitChanged api || nebulae compose-api production --api-type=NEBULAE_GATEWAY --api-repo=https://github.com/nebulae-tpm/gateway.git --api-id=gateway --output-dir=~/nebulae/api/gateway/ --store-type=GCP_DATASTORE --gcp-service-account-token=/tmp/gcloud-service-key.json      
-            gitChanged api || ls ~/nebulae/api/gateway/ 
+            gitChanged api || nebulae compose-api production --api-type=NEBULAE_GATEWAY --api-repo=https://github.com/nebulae-tpm/gateway.git --api-id=gateway --output-dir=/home/circleci/nebulae/api/gateway/ --store-type=GCP_DATASTORE --gcp-service-account-token=/tmp/gcloud-service-key.json      
+            gitChanged api || ls /home/circleci/nebulae/api/gateway/
       - setup_remote_docker
       - run:
           name: Build docker image and push it to hub
