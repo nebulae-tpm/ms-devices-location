@@ -15,6 +15,8 @@ jobs:
           paths:
             - repo
 
+# ################ FRONT END ################
+
   build-frontend:
     working_directory: ~/nebulae/
     docker:
@@ -55,7 +57,8 @@ jobs:
           paths:
             - frontend
             
-            
+# ################ API ################
+
   build-api:    
     working_directory: ~/nebulae/
     docker:
@@ -93,7 +96,10 @@ jobs:
       - persist_to_workspace:
           root: ~/nebulae/
           paths:
-            - api   
+            - api  
+
+
+# ################ BACK END ################ 
             
   build-backend:    
     working_directory: ~/nebulae/
@@ -120,6 +126,8 @@ jobs:
           root: ~/nebulae/
           paths:
             - backend
+
+# ################ DEPLOYMENT ################ 
 
   deploy-prod:
       working_directory: ~/nebulae/
@@ -151,6 +159,9 @@ jobs:
             name: Deploy BackEnds 
             command: |
               kubectl apply -f ~/nebulae/repo/deployment/gke/              
+
+
+
 workflows: 
   version: 2
   build-and-deploy:
