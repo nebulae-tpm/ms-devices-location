@@ -83,12 +83,12 @@ jobs:
           command: | 
             source ~/nebulae/repo/.circleci/scripts/gitChanged.sh
             cd ~/nebulae/repo/
-            mkdir -p ~/nebulae/api
-            gitChanged api || ( cd  ~/nebulae/api/ && git clone --depth=1 https://github.com/nebulae-tpm/gateway  ~/nebulae/api/shell )      
-            gitChanged api || ls ~/nebulae/api/shell
+            mkdir -p ~/nebulae/api/shell/gateway
+            gitChanged api || ( cd  ~/nebulae/api/ && git clone --depth=1 https://github.com/nebulae-tpm/gateway  ~/nebulae/api/shell/gateway )      
+            gitChanged api || ls ~/nebulae/api/shell/gateway
             gitChanged api || export DOCKERHUB_IMAGE=gateway
             gitChanged api || export API_SHELL_PATH=~/nebulae/api/shell
-            gitChanged api || ( cd ~/nebulae/api/shell && sh ~/nebulae/api/shell/deployment/docker/build-docker-hub.sh  && cd ~/nebulae/repo/ )
+            gitChanged api || ( cd ~/nebulae/api/shell/gateway && sh ~/nebulae/api/shell/deployment/docker/build-docker-hub.sh  && cd ~/nebulae/repo/ )
             gitChanged api || echo $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE@$(docker pull $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE:latest | grep sha256 | cut -c 9-) > ~/nebulae/api/DOCKERHUB_GENERATED_IMAGE_DIGEST
       - persist_to_workspace:
           root: ~/nebulae/
