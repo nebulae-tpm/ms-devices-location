@@ -101,8 +101,14 @@ class PubSubBroker {
                 .filter(topicName => Object.keys(this.listeningTopics).indexOf(topicName) === -1)
                 .mergeMap(topicName => {
                     const subscriptionName = `${topicName}_devices-location`;
+
+                    console.log('subscriptionName ==> ', subscriptionName);
+
                     return this.getSubscription$(topicName, subscriptionName)
-                        .map(subsription => { return { topicName, subsription, subscriptionName } })
+                        .map(subsription => { 
+                            console.log("Subscription . ", subsription);
+                            return { topicName, subsription, subscriptionName };
+                         })
                 })
                 .subscribe(
                     ({ topicName, subsription, subscriptionName }) => {
