@@ -74,6 +74,7 @@ jobs:
             gitChanged api || export PATH=~/.npm-global/bin:$PATH
             gitChanged api || source ~/.profile
             gitChanged api || npm install -g @nebulae/cli
+            gitChanged api || nebulae register microapi --microservice-id=devices-location --api-id=gateway --setup-file=/home/circleci/nebulae/repo/etc/mapi-setup.json --store-type=GCP_DATASTORE --gcp-service-account-token=/tmp/gcloud-service-key.json            
             gitChanged api || nebulae compose-api production --api-type=NEBULAE_GATEWAY --api-repo=https://github.com/nebulae-tpm/gateway.git --api-id=gateway --output-dir=~/nebulae/api/gateway/ --store-type=GCP_DATASTORE --gcp-service-account-token=/tmp/gcloud-service-key.json      
             gitChanged api || ls ~/nebulae/api/gateway/ 
       - setup_remote_docker
@@ -82,11 +83,12 @@ jobs:
           command: | 
             source ~/nebulae/repo/.circleci/scripts/gitChanged.sh
             cd ~/nebulae/repo/
-            mkdir ~/nebulae/api
-            gitChanged api || ( mkdir ~/nebulae/api && cd  ~/nebulae/api/ && git clone https://github.com/nebulae-tpm/gateway --depth=1 --directory=shell)     
+            mkdir -p ~/nebulae/api
+            gitChanged api || ( cd  ~/nebulae/api/ && git clone --depth=1 https://github.com/nebulae-tpm/gateway  ~/nebulae/api/shell )      
+            gitChanged api || ls ~/nebulae/api/shell
             gitChanged api || export DOCKERHUB_IMAGE=gateway
-            gitChanged api || export API_SHELL_PATH=/tmp/
-            gitChanged api || sh ~/nebulae/api/shell/deployment/docker/build-docker-hub.sh
+            gitChanged api || export API_SHELL_PATH=~/nebulae/api/shell
+            gitChanged api || ( cd ~/nebulae/api/shell && sh ~/nebulae/api/shell/deployment/docker/build-docker-hub.sh  && cd ~/nebulae/repo/ )
             gitChanged api || echo $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE@$(docker pull $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE:latest | grep sha256 | cut -c 9-) > ~/nebulae/api/DOCKERHUB_GENERATED_IMAGE_DIGEST
       - persist_to_workspace:
           root: ~/nebulae/
@@ -159,10 +161,10 @@ workflows:
           context: TPM
           requires:
             - prepare
-#      - build-api:
-#          context: TPM
-#          requires:
-#            - prepare
+      - build-api:
+          context: TPM
+          requires:
+            - prepare
       - build-backend:
           context: TPM
           requires:
@@ -171,5 +173,5 @@ workflows:
           context: TPM
           requires:
             - build-frontend
-#            - build-api
+            - build-api
             - build-backend
