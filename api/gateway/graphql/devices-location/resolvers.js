@@ -6,6 +6,7 @@ const Rx = require('rxjs');
 module.exports = {
   Query: {
     getDevicesLocation(root, args, context) {
+      console.log('Graphql query -> ', { root, args, jwt: context.encodedToken });
       return context.broker
         .forwardAndGetReply$(
           'projects/ne-tpm-prod/topics/Device',
