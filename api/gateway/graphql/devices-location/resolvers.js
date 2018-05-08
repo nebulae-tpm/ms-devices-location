@@ -9,7 +9,7 @@ module.exports = {
       console.log('Graphql query -> ', { root, args, jwt: context.encodedToken });
       return context.broker
         .forwardAndGetReply$(
-          'projects/ne-tpm-prod/topics/Device',
+          'Device',
           'gateway.graphql.query.getDevicesLocation',
           { root, args, jwt: context.encodedToken },
           500
