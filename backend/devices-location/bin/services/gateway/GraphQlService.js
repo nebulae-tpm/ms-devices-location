@@ -40,7 +40,11 @@ class GraphQlService {
                         if (replyTo) {
                             console.log('GraphQl response3 => ', response);
                             console.log('Message response2 => ', replyTo, correlationId, broker)
-                            broker.send$(replyTo, 'gateway.graphql.Query.response', response, { correlationId });
+                            broker
+                            .send$(replyTo, 'gateway.graphql.Query.response', response, { correlationId })
+                            .subscribe(val => {
+                                console.log('Query response => ', val);
+                            });
                         }
                     },
                     (error) => console.error('Error listening to messages', error),
