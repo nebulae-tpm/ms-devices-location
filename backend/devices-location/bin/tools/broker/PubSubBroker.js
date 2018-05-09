@@ -219,7 +219,7 @@ class PubSubBroker {
     * @param {Object} ops {correlationId} 
     */
     publish$(topic, type, data, { correlationId } = {}) {
-        console.log("PUBLISH1 - :", type, correlationId);
+        console.log("PUBLISH2 - :", type, correlationId);
         console.log("DATA1 --- ", data);
         const dataBuffer = Buffer.from(JSON.stringify(data));
         return Rx.Observable.fromPromise(

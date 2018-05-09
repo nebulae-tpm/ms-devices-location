@@ -20,6 +20,7 @@ module.exports = {
   Subscription: {
     deviceLocationReportedEvent: {
       subscribe: withFilter((payload, variables, context, info) => {
+        console.log("withFilter 1");
         const subscription = context.broker.getMaterializedViewsUpdates$(['deviceLocationReportedEvent']).subscribe(
           evt => {
             console.log("Subscription response1 => ", evt);
