@@ -156,20 +156,27 @@ class PubSubBroker {
      * @param {string} topicName 
      */
     getTopic$(topicName) {
+        console.log("getTopic$ ==> 1 ", topicName);
         //Tries to get a cached topic
         const cachedTopic = this.verifiedTopics[topicName];
+        console.log("getTopic$ ==> 2 ", cachedTopic);
         if (!cachedTopic) {
+            console.log("getTopic$ ==> 3 ", cachedTopic);
             //if not cached, then tries to know if the topic exists
             const topic = this.pubsubClient.topic(topicName);
+            console.log("getTopic$ ==> 4 ", topic);
             return Rx.Observable.fromPromise(topic.exists())
+                .do(val => console.log("DO ==== ", val))
                 .map(data => data[0])
                 .switchMap(exists => {
                     if (exists) {
+                        console.log("getTopic$ ==> 5 ");
                         //if it does exists, then store it on the cache and return it
                         this.verifiedTopics[topicName] = topic;
                         console.log(`Topic ${topicName} already existed and has been set into the cache`);
                         return Rx.Observable.of(topic);
                     } else {
+                        console.log("getTopic$ ==> 6 ");
                         //if it does NOT exists, then create it, store it in the cache and return it
                         return this.createTopic$(topicName);
                     }
@@ -177,6 +184,7 @@ class PubSubBroker {
                 ;
         }
         //return cached topic
+        console.log("getTopic$ ==> 7 ", cachedTopic);
         return Rx.Observable.of(cachedTopic);
     }
 
