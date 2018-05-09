@@ -50,7 +50,7 @@ class DeviceLocation {
                 type: deviceLocation.type
             }            
             return deviceLocationReportedEvent;
-        }).mergeMap(formattedLoc => broker.send$('materializedViewUpdates','deviceLocationReportedEvent',formattedLoc));
+        }).mergeMap(formattedLoc => broker.send$('materialized-view-updates','deviceLocationReportedEvent',formattedLoc));
     }
 
     /**
