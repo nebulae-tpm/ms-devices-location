@@ -191,22 +191,6 @@ class PubSubBroker {
                     }
                 })
                 ;
-
-
-                return Rx.Observable.fromPromise(topic.exists())
-                .map(data => data[0])
-                .switchMap(exists => {
-                    if (exists) {
-                        //if it does exists, then store it on the cache and return it
-                        this.verifiedTopics[topicName] = topic;
-                        console.log(`Topic ${topicName} already existed and has been set into the cache`);
-                        return Rx.Observable.of(topic);
-                    } else {
-                        //if it does NOT exists, then create it, store it in the cache and return it
-                        return this.createTopic$(topicName);
-                    }
-                })
-                ;
         }
         //return cached topic
         console.log("getTopic$ ==> 7 ", cachedTopic);
@@ -235,7 +219,8 @@ class PubSubBroker {
     * @param {Object} ops {correlationId} 
     */
     publish$(topic, type, data, { correlationId } = {}) {
-        console.log("Type :", type);
+        console.log("PUBLISH - :", type, correlationId);
+        console.log("DATA --- ", data);
         const dataBuffer = Buffer.from(JSON.stringify(data));
         return Rx.Observable.fromPromise(
             topic.publisher().publish(
