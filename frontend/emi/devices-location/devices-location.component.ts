@@ -60,7 +60,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy, OnChanges {
   ngOnInit(): void {
     this.initMap();
     //this.initAutocomplete();
-
+    console.log('NgOnInit');
     this.bounds  = new google.maps.LatLngBounds();
     this.deviceLocationDataSubscription = this.devicesLocationService.getDevicesLocation(0, 400)
     .mergeMap(devicesLocation => Observable.from(devicesLocation.data.getDevicesLocation))
