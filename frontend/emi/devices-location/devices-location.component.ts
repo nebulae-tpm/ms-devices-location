@@ -87,7 +87,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy, OnChanges {
 
     this.deviceLocationSubscription = this.devicesLocationService
       .subscribeDeviceLocation()
-      .do(val => console.log("Subscription DevicesLocation => ", val))
+      //.do(val => console.log("Subscription DevicesLocation => ", val))
       .mergeMap(deviceLocation => {
         return this.manageMarkers(deviceLocation.data.deviceLocationReportedEvent);
       })
@@ -118,7 +118,6 @@ export class DevicesLocationComponent implements OnInit, OnDestroy, OnChanges {
 
   initAutocomplete() {
     this.autoComplete = new google.maps.places.Autocomplete(this.input.nativeElement);
-
     this.autoComplete.bindTo('bounds', this.map);
     this.autoComplete.addListener('place_changed', () => {
       const place = this.autoComplete.getPlace();
@@ -191,11 +190,6 @@ export class DevicesLocationComponent implements OnInit, OnDestroy, OnChanges {
       .subscribe(marker => {
         this.addMarkerToMap(marker);
       });
-
-    //         infoWindowContent =  infoWindowContent.toString().replace('$plate', this.translate.get('MARKER.INFOWINDOW.PLATE'). );
-    //         infoWindowContent = infoWindowContent.toString().replace('$serial', deviceLocation.id );
-
-    // let infoWindowContent = marker.infoWindow.getContent();
   }
 
 
