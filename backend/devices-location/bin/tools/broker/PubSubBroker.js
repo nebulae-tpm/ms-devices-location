@@ -33,6 +33,7 @@ class PubSubBroker {
      */
     send$(topic, type, payload, ops = {}) {
         return this.getTopic$(topic)
+            .do(topic => console.log("TOPIC ====> ", topic))
             .switchMap(topic => this.publish$(topic, type, payload, ops))
     }
 
@@ -201,6 +202,7 @@ class PubSubBroker {
     * @param {Object} ops {correlationId} 
     */
     publish$(topic, type, data, { correlationId } = {}) {
+        console.log("Type :", type);
         const dataBuffer = Buffer.from(JSON.stringify(data));
         return Rx.Observable.fromPromise(
             topic.publisher().publish(
@@ -210,7 +212,7 @@ class PubSubBroker {
                     senderId: this.senderId,
                     correlationId
                 }))
-            //.do(messageId => console.log(`Message published through ${topic.name}, MessageId=${messageId}`))
+            .do(messageId => console.log(`Message published through ${topic.name}, MessageId=${messageId}`))
             ;
     }
 
