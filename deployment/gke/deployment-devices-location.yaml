@@ -7,15 +7,13 @@ spec:
   selector:
     matchLabels:
       app: dev-location
-  strategy:
-    type: Recreate
   template:
     metadata:
       labels:
         app: dev-location
     spec:      
       containers:
-      - image: nebulaetpm/devices-location.backend.devices-location:0.0.19
+      - image: nebulaetpm/devices-location.backend.devices-location:0.0.20
         name: dev-location
         volumeMounts:
         - name: google-application-credentials
