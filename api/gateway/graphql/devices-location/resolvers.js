@@ -6,7 +6,7 @@ const Rx = require('rxjs');
 module.exports = {
   Query: {
     getDevicesLocation(root, args, context) {
-      console.log('Graphql query -> ', { root, args, jwt: context.encodedToken });
+      console.log('Graphql1 query -> ', { root, args, jwt: context.encodedToken });
       return context.broker
         .forwardAndGetReply$(
           'Device',
@@ -23,7 +23,7 @@ module.exports = {
         const subscription = context.broker.getMaterializedViewsUpdates$(['deviceLocationReportedEvent']).subscribe(
           evt => {
             console.log("Subscription response1 => ", evt);
-            pubsub.publish('deviceLocationReportedEvent', { deviceLocationReportedEvent: evt.data })
+            pubsub.publish('deviceLocationReportedEvent', { deviceLocationReportedEvent: evt.data });
           },
           (error) => console.error('Error listening deviceLocationReportedEvent', error),
           () => console.log('deviceLocationReportedEvent listener STOPPED')

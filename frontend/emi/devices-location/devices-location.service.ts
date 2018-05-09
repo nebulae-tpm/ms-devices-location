@@ -29,7 +29,7 @@ export class DevicesLocationService {
     }
 
   subscribeDeviceLocation(): Observable<any> {
-    console.log('DevicesLocationService subscribeDeviceLocation'); 
+    console.log('1DevicesLocation subscribeDeviceLocation'); 
     return this.gateway.apollo
       .subscribe({
         query: deviceLocationReportedEvent

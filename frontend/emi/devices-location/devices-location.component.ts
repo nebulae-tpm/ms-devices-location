@@ -54,15 +54,13 @@ export class DevicesLocationComponent implements OnInit, OnDestroy, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     //Called before any other lifecycle hook. Use it to inject dependencies, but avoid any serious work here.
     //Add '${implements OnChanges}' to the class.
-    console.log('ngOnChanges');
   }
 
   ngOnInit(): void {
     this.initMap();
     //this.initAutocomplete();
-
+    console.log('ngOnInit');
     this.bounds  = new google.maps.LatLngBounds();
-    console.log('ngOnInit1');
     this.deviceLocationDataSubscription = this.devicesLocationService.getDevicesLocation(0, 400)
     .do(val => console.log("DevicesLocation => ", val))
     .mergeMap(devicesLocation => Observable.from(devicesLocation.data.getDevicesLocation))
@@ -86,7 +84,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy, OnChanges {
         this.map.panToBounds(this.bounds);
       }
     );
-    console.log('ngOnInit2');
+
     this.deviceLocationSubscription = this.devicesLocationService
       .subscribeDeviceLocation()
       .do(val => console.log("Subscription DevicesLocation => ", val))
@@ -95,7 +93,6 @@ export class DevicesLocationComponent implements OnInit, OnDestroy, OnChanges {
       })
       .subscribe(data => {
         //this.manageMarkers(deviceLocation.data.deviceLocationReportedEvent);
-        console.log("DATA ", data);
         if (!data[0].getMap()) {
           data[0].setMap(this.map);
           //this.addMarker(data[0]);
@@ -104,7 +101,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy, OnChanges {
           data[0].updateLocation(data[1].lng, data[1].lat, 1000);
         }
       });
-      console.log('ngOnInit3');
+
     this.translate.onLangChange.subscribe(lang => {
       const translations = lang.translations.MARKER.INFOWINDOW;
       this.markers.forEach(m => {
