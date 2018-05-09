@@ -85,7 +85,6 @@ class PubSubBroker {
             .switchMap(() =>
                 this.incomingMessages$
                     .filter(msg => msg)
-                    .do(msg => console.log("All message listener ", msg))
                     .filter(msg => !ignoreSelfEvents || msg.attributes.senderId !== this.senderId)
                     .filter(msg => topics.length === 0 || topics.indexOf(msg.topic) > -1)
                     .filter(msg => types.length === 0 || types.indexOf(msg.type) > -1)
@@ -166,6 +165,15 @@ class PubSubBroker {
             //if not cached, then tries to know if the topic exists
             const topic = this.pubsubClient.topic(topicName);
             console.log("getTopic$ ==> 4 ", topic.name);
+
+            try {
+                Rx.Observable.fromPromise(topic.exists()).subscribe(val => {
+                    console.log("Result => ", val);
+                });
+            } catch (error) {
+                console.log("Error => ", error);
+            }
+
             return Rx.Observable.fromPromise(topic.exists())
                 .do(val => console.log("DO ==== ", val))
                 .map(data => data[0])
@@ -178,6 +186,22 @@ class PubSubBroker {
                         return Rx.Observable.of(topic);
                     } else {
                         console.log("getTopic$ ==> 6 ");
+                        //if it does NOT exists, then create it, store it in the cache and return it
+                        return this.createTopic$(topicName);
+                    }
+                })
+                ;
+
+
+                return Rx.Observable.fromPromise(topic.exists())
+                .map(data => data[0])
+                .switchMap(exists => {
+                    if (exists) {
+                        //if it does exists, then store it on the cache and return it
+                        this.verifiedTopics[topicName] = topic;
+                        console.log(`Topic ${topicName} already existed and has been set into the cache`);
+                        return Rx.Observable.of(topic);
+                    } else {
                         //if it does NOT exists, then create it, store it in the cache and return it
                         return this.createTopic$(topicName);
                     }
