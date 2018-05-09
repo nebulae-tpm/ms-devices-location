@@ -63,6 +63,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy, OnChanges {
 
     this.bounds  = new google.maps.LatLngBounds();
     this.deviceLocationDataSubscription = this.devicesLocationService.getDevicesLocation(0, 400)
+    .do(val => console.log("DevicesLocation => ", val))
     .mergeMap(devicesLocation => Observable.from(devicesLocation.data.getDevicesLocation))
     .mergeMap((deviceLocation: any) => {
       return this.manageMarkers(deviceLocation);
@@ -149,6 +150,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy, OnChanges {
 
   manageMarkers(deviceLocation): Observable<[MarkerRef,any]> {
     return Observable.from(this.markers)
+      .do(marker => console.log("Marker => ", marker))
       .filter(marker => {
         return marker.vehicle.serial == deviceLocation.id;
       })

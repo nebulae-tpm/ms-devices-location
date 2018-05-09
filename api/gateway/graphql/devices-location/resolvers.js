@@ -22,6 +22,7 @@ module.exports = {
       subscribe: withFilter((payload, variables, context, info) => {
         const subscription = context.broker.getMaterializedViewsUpdates$(['deviceLocationReportedEvent']).subscribe(
           evt => {
+            console.log("Subscription response => ", evt);
             pubsub.publish('deviceLocationReportedEvent', { deviceLocationReportedEvent: evt.data })
           },
           (error) => console.error('Error listening deviceLocationReportedEvent', error),
