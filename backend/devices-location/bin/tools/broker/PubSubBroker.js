@@ -32,6 +32,7 @@ class PubSubBroker {
      * @param {Object} ops {correlationId} 
      */
     send$(topic, type, payload, ops = {}) {
+        console.log("send$ 1");
         return this.getTopic$(topic)
             .do(topic => console.log("TOPIC ====> ", topic))
             .switchMap(topic => this.publish$(topic, type, payload, ops))
