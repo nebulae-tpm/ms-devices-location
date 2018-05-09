@@ -54,10 +54,13 @@ export class DevicesLocationComponent implements OnInit, OnDestroy, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     //Called before any other lifecycle hook. Use it to inject dependencies, but avoid any serious work here.
     //Add '${implements OnChanges}' to the class.
+    console.log('ngOnChanges');
   }
 
   ngOnInit(): void {
     this.initMap();
+    //this.initAutocomplete();
+
     this.bounds  = new google.maps.LatLngBounds();
     this.deviceLocationDataSubscription = this.devicesLocationService.getDevicesLocation(0, 400)
     .mergeMap(devicesLocation => Observable.from(devicesLocation.data.getDevicesLocation))
@@ -83,7 +86,6 @@ export class DevicesLocationComponent implements OnInit, OnDestroy, OnChanges {
 
     this.deviceLocationSubscription = this.devicesLocationService
       .subscribeDeviceLocation()
-      //.do(val => console.log("Subscription DevicesLocation => ", val))
       .mergeMap(deviceLocation => {
         return this.manageMarkers(deviceLocation.data.deviceLocationReportedEvent);
       })
@@ -114,6 +116,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy, OnChanges {
 
   initAutocomplete() {
     this.autoComplete = new google.maps.places.Autocomplete(this.input.nativeElement);
+
     this.autoComplete.bindTo('bounds', this.map);
     this.autoComplete.addListener('place_changed', () => {
       const place = this.autoComplete.getPlace();
@@ -185,6 +188,11 @@ export class DevicesLocationComponent implements OnInit, OnDestroy, OnChanges {
       .subscribe(marker => {
         this.addMarkerToMap(marker);
       });
+
+    //         infoWindowContent =  infoWindowContent.toString().replace('$plate', this.translate.get('MARKER.INFOWINDOW.PLATE'). );
+    //         infoWindowContent = infoWindowContent.toString().replace('$serial', deviceLocation.id );
+
+    // let infoWindowContent = marker.infoWindow.getContent();
   }
 
 

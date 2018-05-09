@@ -1,7 +1,7 @@
 import { Subscription } from 'rxjs/Subscription';
 import { Injectable } from '@angular/core';
 import {
-  ActivatedRouteSnapshot,  
+  ActivatedRouteSnapshot,
   RouterStateSnapshot
 } from '@angular/router';
 import { GatewayService } from '../../../api/gateway.service';
@@ -17,7 +17,7 @@ export class DevicesLocationService {
   constructor(private http: HttpClient, private gateway: GatewayService) { }
 
   getDevicesLocation(page, count): Observable<any> {
-    console.log('DevicesLocationService getDevicesLocation'); 
+    console.log('test');
     return this.gateway.apollo
       .query<any>({
         query: getDevicesLocation,
@@ -29,7 +29,6 @@ export class DevicesLocationService {
     }
 
   subscribeDeviceLocation(): Observable<any> {
-    console.log('1DevicesLocation subscribeDeviceLocation'); 
     return this.gateway.apollo
       .subscribe({
         query: deviceLocationReportedEvent
