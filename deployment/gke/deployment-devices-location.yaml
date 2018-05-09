@@ -8,7 +8,7 @@ spec:
     matchLabels:
       app: dev-location
   strategy:
-    type: Recreate    
+    type: Recreate
   template:
     metadata:
       labels:
