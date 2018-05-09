@@ -39,7 +39,7 @@ class GraphQlService {
                         // broker.send$('MaterializedViewUpdates','gateway.graphql.Subscription.response',response);
                         if (replyTo) {
                             console.log('GraphQl response1 => ', response);
-                            console.log('Message response => ', replyTo, correlationId, broker)
+                            console.log('Message response1 => ', replyTo, correlationId, broker)
                             broker.send$(replyTo, 'gateway.graphql.Query.response', response, { correlationId });
                         }
                     },

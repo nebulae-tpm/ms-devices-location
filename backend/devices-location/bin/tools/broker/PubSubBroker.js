@@ -165,7 +165,7 @@ class PubSubBroker {
             console.log("getTopic$ ==> 3 ", cachedTopic);
             //if not cached, then tries to know if the topic exists
             const topic = this.pubsubClient.topic(topicName);
-            console.log("getTopic$ ==> 4 ", topic);
+            console.log("getTopic$ ==> 4 ", topic.name);
             return Rx.Observable.fromPromise(topic.exists())
                 .do(val => console.log("DO ==== ", val))
                 .map(data => data[0])
