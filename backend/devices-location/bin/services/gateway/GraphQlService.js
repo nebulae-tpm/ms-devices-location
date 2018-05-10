@@ -34,18 +34,17 @@ class GraphQlService {
                         })
                 )
                 //send response back if neccesary
+                .mergeMap(({ response, correlationId, replyTo }) => {
+                    if (replyTo) {
+                        console.log('GraphQl response3 => ', response);
+                        return broker.send$(replyTo, 'gateway.graphql.Query.response', response, { correlationId });
+                    }else{
+                        return Rx.Observable.of(undefined);
+                    }
+                })
                 .subscribe(
-                    ({ response, correlationId, replyTo }) => {
-                        // broker.send$('MaterializedViewUpdates','gateway.graphql.Subscription.response',response);
-                        if (replyTo) {
-                            console.log('GraphQl response3 => ', response);
-                            console.log('Message response2 => ', replyTo, correlationId, broker)
-                            broker
-                            .send$(replyTo, 'gateway.graphql.Query.response', response, { correlationId })
-                            .subscribe(val => {
-                                console.log('Query response => ', val);
-                            });
-                        }
+                    (result) => {
+                        // console.log('Query response => ', result);
                     },
                     (error) => console.error('Error listening to messages', error),
                     () => {

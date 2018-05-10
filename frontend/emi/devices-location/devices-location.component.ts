@@ -77,7 +77,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy, OnChanges {
       } else {
         data[0].updateLocation(data[1].lng, data[1].lat, 1000);
       }},
-      e => console.log(),
+      error => console.log(error),
       () => {
         this.map.fitBounds(this.bounds);
         this.map.panToBounds(this.bounds);

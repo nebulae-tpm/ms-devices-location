@@ -32,9 +32,7 @@ class PubSubBroker {
      * @param {Object} ops {correlationId} 
      */
     send$(topic, type, payload, ops = {}) {
-        console.log("send$ 1");
         return this.getTopic$(topic)
-            .do(topic => console.log("TOPIC ====> ", topic))
             .switchMap(topic => this.publish$(topic, type, payload, ops))
     }
 
@@ -156,30 +154,18 @@ class PubSubBroker {
      * @param {string} topicName 
      */
     getTopic$(topicName) {
-        console.log("getTopic$ ==> 1 ", topicName);
         //Tries to get a cached topic
         const cachedTopic = this.verifiedTopics[topicName];
-        console.log("getTopic$ ==> 2 ", cachedTopic);
         if (!cachedTopic) {
-            console.log("getTopic$ ==> 3 ", cachedTopic);
             //if not cached, then tries to know if the topic exists
             const topic = this.pubsubClient.topic(topicName);
             console.log("getTopic$ ==> 4 ", topic.name);
-
-            try {
-                Rx.Observable.fromPromise(topic.exists()).subscribe(val => {
-                    console.log("Result => ", val);
-                });
-            } catch (error) {
-                console.log("Error => ", error);
-            }
 
             return Rx.Observable.fromPromise(topic.exists())
                 .do(val => console.log("DO ==== ", val))
                 .map(data => data[0])
                 .switchMap(exists => {
                     if (exists) {
-                        console.log("getTopic$ ==> 5 ");
                         //if it does exists, then store it on the cache and return it
                         this.verifiedTopics[topicName] = topic;
                         console.log(`Topic ${topicName} already existed and has been set into the cache`);
@@ -219,8 +205,6 @@ class PubSubBroker {
     * @param {Object} ops {correlationId} 
     */
     publish$(topic, type, data, { correlationId } = {}) {
-        console.log("PUBLISH2 - :", type, correlationId);
-        console.log("DATA1 --- ", data);
         const dataBuffer = Buffer.from(JSON.stringify(data));
         return Rx.Observable.fromPromise(
             topic.publisher().publish(
@@ -230,7 +214,7 @@ class PubSubBroker {
                     senderId: this.senderId,
                     correlationId
                 }))
-            .do(messageId => console.log(`Message published through ${topic.name}, MessageId=${messageId}`))
+            .do(messageId => console.log(`Message published through ${topic.name}, MessageId=${messageId}, date: ${new Date()}`))
             ;
     }
 
