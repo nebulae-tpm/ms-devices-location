@@ -41,6 +41,7 @@ class DeviceLocation {
         const deviceLocation = {aid: data.aid, loc: data.data.loc, timestamp: data.data.timestamp, version: data.etv};  
         return DeviceLocationDA.updateDeviceLocation$(deviceLocation)
         .map(deviceLocation => {
+            console.log('updateDeviceLocation ==> ', new Date());
             const deviceLocationReportedEvent = {
                 id: deviceLocation.id, 
                 timestamp: deviceLocation.timestamp,
@@ -62,6 +63,7 @@ class DeviceLocation {
         const deviceData = {aid: data.aid, hostname: data.data.hostname, type: data.data.type, version: data.etv};  
         return DeviceLocationDA.updateDeviceData$(deviceData)
         .map(deviceLocation => {
+            console.log('updateDeviceData ==> ', new Date());
             const deviceLocationReportedEvent = {
                 id: deviceLocation.id, 
                 timestamp: deviceLocation.timestamp,
