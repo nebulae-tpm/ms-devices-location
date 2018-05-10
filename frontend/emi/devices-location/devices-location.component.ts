@@ -207,6 +207,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy, OnChanges {
       this.translate.get('MARKER.INFOWINDOW.VEHICLE')
     )
       .map(([marker, title, plate, vehicle]) => {
+        console.log("updateMarkerInfoContent ", plate, vehicle, marker);
         let infoWindowContent = MarkerRefInfoWindowContent;
         infoWindowContent = infoWindowContent.toString().replace('{TITLE}', title);
         infoWindowContent = infoWindowContent.toString().replace('{PLATE}', plate);
