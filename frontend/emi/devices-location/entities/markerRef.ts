@@ -47,6 +47,8 @@ export class MarkerRef extends google.maps.Marker {
 
   vehicle = null;
 
+  lastTimeLocationReported = null;
+
 
   constructor(vehicle: Vehicle, opts?: google.maps.MarkerOptions) {
     super(opts);
@@ -56,13 +58,15 @@ export class MarkerRef extends google.maps.Marker {
     this.setDraggable(true);
     this.setIcon('./assets/devices-location/tpm_bus_30_30.png');
     this.vehicle = vehicle;
+    this.lastTimeLocationReported = 0;
   }
 
-  updateLocation(lng: number, lat: number, delay: number): void {
-    console.log('Update location -> '+ lng + " -- "+ lat);
+  updateLocation(lng: number, lat: number, delay: number, lastTimeLocationReported: number): void {
+    console.log('Update location -> '+ lng + " -- "+ lat + " - Timestamp: " + lastTimeLocationReported);
     // X refer to logitude
     // Y refer to latitude
     this.setVisibility(100);
+    this.lastTimeLocationReported = lastTimeLocationReported;
     const currentLng = this.getPosition().lng();
     const currentLat = this.getPosition().lat();
     const updateDelay = 5;

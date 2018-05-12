@@ -67,15 +67,16 @@ export class DevicesLocationComponent implements OnInit, OnDestroy, OnChanges {
     .mergeMap((deviceLocation: any) => {
       return this.manageMarkers(deviceLocation);
     })
-    .subscribe((data: any) => {
-      if (!data[0].getMap()) {
-        data[0].setMap(this.map);
+    .filter(([marker, deviceLocation]) => (marker as MarkerRef).lastTimeLocationReported <  deviceLocation.timestamp)
+    .subscribe(([marker, deviceLocation]) => {
+      if (!marker.getMap()) {
+        marker.setMap(this.map);
         //this.addMarker(data[0]);
-        const loc = new google.maps.LatLng(data[0].getPosition().lat(), data[0].getPosition().lng());
+        const loc = new google.maps.LatLng(marker.getPosition().lat(), marker.getPosition().lng());
         this.bounds.extend(loc);
-        this.addMarkerToMap(data[0]);
+        this.addMarkerToMap(marker);
       } else {
-        data[0].updateLocation(data[1].lng, data[1].lat, 1000);
+        marker.updateLocation(deviceLocation.lng, deviceLocation.lat, 1000, deviceLocation.timestamp);
       }},
       error => console.log(error),
       () => {
@@ -90,14 +91,13 @@ export class DevicesLocationComponent implements OnInit, OnDestroy, OnChanges {
       .mergeMap(deviceLocation => {
         return this.manageMarkers(deviceLocation.data.deviceLocationReportedEvent);
       })
-      .subscribe(data => {
-        //this.manageMarkers(deviceLocation.data.deviceLocationReportedEvent);
-        if (!data[0].getMap()) {
-          data[0].setMap(this.map);
-          //this.addMarker(data[0]);
-          this.addMarkerToMap(data[0]);
+      .filter(([marker, deviceLocation]) => (marker as MarkerRef).lastTimeLocationReported <  deviceLocation.timestamp)
+      .subscribe(([marker, deviceLocation]) => {
+        if (!marker.getMap()) {
+          marker.setMap(this.map);
+          this.addMarkerToMap(marker);
         } else {
-          data[0].updateLocation(data[1].lng, data[1].lat, 1000);
+          marker.updateLocation(deviceLocation.lng, deviceLocation.lat, 1000, deviceLocation.timestamp);
         }
       });
 
@@ -157,7 +157,6 @@ export class DevicesLocationComponent implements OnInit, OnDestroy, OnChanges {
       })
       .defaultIfEmpty(
         new MarkerRef(
-
           { plate: deviceLocation.hostname, serial: deviceLocation.id},
           {
           position: {
