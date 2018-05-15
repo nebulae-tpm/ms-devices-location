@@ -49,6 +49,16 @@ export class MarkerRef extends google.maps.Marker {
 
   lastTimeLocationReported = null;
 
+  index = 0;
+
+  deltaLat = 0;
+
+  deltaLng = 0;
+
+  numDeltas = 80;
+
+  delay = 10;
+
 
   constructor(vehicle: Vehicle, opts?: google.maps.MarkerOptions) {
     super(opts);
@@ -61,7 +71,7 @@ export class MarkerRef extends google.maps.Marker {
     this.lastTimeLocationReported = 0;
   }
 
-  updateLocation(lng: number, lat: number, delay: number, lastTimeLocationReported: number): void {
+  updateLocation1(lng: number, lat: number, delay: number, lastTimeLocationReported: number): void {
     console.log('Update location -> '+ lng + " -- "+ lat + " - Timestamp: " + lastTimeLocationReported);
     // X refer to logitude
     // Y refer to latitude
@@ -95,6 +105,30 @@ export class MarkerRef extends google.maps.Marker {
 
   distanceBetweenTwoPoints(x1, y1, x2, y2) {
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+  }
+
+  updateLocation(lng: number, lat: number, delay: number, lastTimeLocationReported: number){
+    console.log('Update location -> '+ lng + " -- "+ lat + " - Timestamp: " + lastTimeLocationReported);
+    this.setVisibility(100);
+    this.lastTimeLocationReported = lastTimeLocationReported;
+    this.index = 0;
+    this.deltaLat = (lat - this.getPosition().lat())/this.numDeltas;
+    this.deltaLng = (lng - this.getPosition().lng())/this.numDeltas;
+    this.moveMarker();
+}
+
+  moveMarker(){
+    console.log('Moving marker');
+    const lat = this.getPosition().lat() + this.deltaLat;
+    const lng = this.getPosition().lng() + this.deltaLng;
+    this.setPosition(
+      new google.maps.LatLng(lat,lng)
+    );
+
+    if(this.index != this.numDeltas){
+        this.index++;
+        setTimeout(this.moveMarker, this.delay);
+    }
   }
 
   setVisibility(visibility: number): void {
