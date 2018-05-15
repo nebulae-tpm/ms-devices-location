@@ -64,7 +64,7 @@ class DeviceLocation {
         const deviceData = {aid: data.aid, hostname: data.data.hostname, type: data.data.type, version: data.etv};
         return DeviceLocationDA.updateDeviceData$(deviceData)
         .map(deviceLocation => {
-            console.log('------ updateDeviceData ==> ', new Date());
+            console.log('---11--- updateDeviceData ==> ', deviceLocation);
             const deviceLocationReportedEvent = {
                 id: deviceLocation.id, 
                 timestamp: deviceLocation.timestamp,
@@ -73,6 +73,7 @@ class DeviceLocation {
                 hostname: deviceLocation.hostname,
                 type: deviceLocation.type
             }            
+            console.log('---22--- updateDeviceData ==> ', deviceLocationReportedEvent);
             return deviceLocationReportedEvent;
         }).mergeMap(formattedLoc => broker.send$('materialized-view-updates','deviceLocationReportedEvent',formattedLoc));
     }
