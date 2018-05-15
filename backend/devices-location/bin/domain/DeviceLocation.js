@@ -67,7 +67,7 @@ class DeviceLocation {
 
         return DeviceLocationDA.updateDeviceData$(deviceData)
         .map(deviceLocation => {
-            console.log('---11--- updateDeviceData ==> ', deviceLocation);
+            console.log('---111--- updateDeviceData ==> ', deviceLocation);
             const deviceLocationReportedEvent = {
                 id: deviceLocation.id, 
                 timestamp: deviceLocation.timestamp,
