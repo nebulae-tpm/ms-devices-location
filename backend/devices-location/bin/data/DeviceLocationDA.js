@@ -49,12 +49,7 @@ class DeviceLocationDA {
             {
                 id: deviceDataReported.aid
             },
-            { $set :{ 
-                hostname: deviceDataReported.hostname, 
-                id: deviceDataReported.aid, 
-                type: deviceDataReported.type, 
-                version: deviceDataReported.version
-            }},
+            { $set :deviceDataReported},
             {
                 upsert: true,
                 returnOriginal: false
