@@ -20,6 +20,7 @@ class DeviceLocationDA {
      * @param {*} deviceLocationReported Data reported by the device
      */
     static updateDeviceLocation$(deviceLocationReported){
+        console.log('DATE updateDeviceLocation', new Date());
         const collection = mongoDB.db.collection(collectionName);
         return Rx.Observable.bindNodeCallback(collection.findOneAndUpdate.bind(collection))(
             {

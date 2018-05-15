@@ -23,6 +23,8 @@ class MongoDB {
     start$() {
         return Rx.Observable.bindNodeCallback(MongoClient.connect)(this.url)
             .map(client => {
+                client.on('close', () => { console.log('-> Mongo: lost connection'); });
+                client.on('reconnect', () => { console.log('-> Mongo reconnected'); });
                 this.client = client;
                 this.db = this.client.db(this.dbName);                
                 return `MongoDB connected to dbName= ${this.dbName}`;
