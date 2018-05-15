@@ -24,15 +24,18 @@ class GraphQlService {
     start$() {
         return Rx.Observable.create(observer => {
             this.subscription = broker.getMessageListener$(['Device'], Object.keys(this.functionMap))
+                .do(val => console.log('Request received -> ', new Date()))
                 //decode and verify the jwt token
                 .map(message => { return { authToken: jsonwebtoken.verify(message.data.jwt, jwtPublicKey), message }; })
                 //ROUTE MESSAGE TO RESOLVER
+                .do(val => console.log('Request verified -> ', new Date()))
                 .mergeMap(({ authToken, message }) =>
                     this.functionMap[message.type](message.data, authToken)
                         .map(response => {
                             return { response, correlationId: message.id, replyTo: message.attributes.replyTo };
                         })
                 )
+                .do(val => console.log('Request processed -> ', new Date()))
                 //send response back if neccesary
                 .mergeMap(({ response, correlationId, replyTo }) => {
                     if (replyTo) {
