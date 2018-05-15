@@ -60,7 +60,8 @@ class DeviceLocation {
      * @param {*} authToken Auth token
      */
     updateDeviceData$(data, authToken) {
-        const deviceData = {aid: data.aid, hostname: data.data.hostname, type: data.data.type, version: data.etv};  
+        console.log('DATA updateDeviceData: ', data)
+        const deviceData = {aid: data.aid, hostname: data.data.hostname, type: data.data.type, version: data.etv};
         return DeviceLocationDA.updateDeviceData$(deviceData)
         .map(deviceLocation => {
             console.log('updateDeviceData ==> ', new Date());

@@ -119,7 +119,7 @@ export class MarkerRef extends google.maps.Marker {
 }
 
   moveMarker(){
-    console.log('Moving marker');
+    // console.log('Moving marker');
     const lat = this.getPosition().lat() + this.deltaLat;
     const lng = this.getPosition().lng() + this.deltaLng;
     this.setPosition(
@@ -139,7 +139,7 @@ export class MarkerRef extends google.maps.Marker {
   inizialiteEvents(){
     this.addListener('click', (e: google.maps.MouseEvent) => { this.clickEvent.next(e); });
     this.addListener('dblclick', (e) => { this.dblclickEvent.next(e); });
-    this.addListener('dragend', (e) => { this.dragendEvent.next(e); });
+    //this.addListener('dragend', (e) => { this.dragendEvent.next(e); });
     // this.addListener('position_changed', (e) => { this.position_changedEvent.next(e); });
   }
 
