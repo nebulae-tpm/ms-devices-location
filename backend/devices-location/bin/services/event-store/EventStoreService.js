@@ -31,12 +31,10 @@ class EventStoreService {
             () => console.log('EventStore incoming event subscription completed');
         }
 
-        return Rx.Observable.from(
-            [
-                { aggregateType: 'Device', eventType: 'DeviceDeviceStateReported', onErrorHandler, onCompleteHandler },
-                { aggregateType: 'Device', eventType: 'DeviceLocationReported', onErrorHandler, onCompleteHandler }
-            ],
-        ).map(params => this.subscribeEventHandler(params));
+        return Rx.Observable.from([
+            { aggregateType: 'Device', eventType: 'DeviceDeviceStateReported', onErrorHandler, onCompleteHandler },
+            { aggregateType: 'Device', eventType: 'DeviceLocationReported', onErrorHandler, onCompleteHandler },
+        ]).map(params => this.subscribeEventHandler(params));
     }
 
     /**
