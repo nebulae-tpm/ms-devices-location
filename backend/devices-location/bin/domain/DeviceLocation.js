@@ -61,7 +61,10 @@ class DeviceLocation {
      */
     updateDeviceData$(data, authToken) {
         console.log('DATA updateDeviceData: ', data);
-        const deviceData = {aid: data.aid, hostname: data.data.hostname, type: data.data.type, version: data.etv};
+        //const deviceData = {aid: data.aid, hostname: data.data.hostname, type: data.data.type, version: data.etv};
+        let deviceData = data.data;
+        deviceData['version'] = data.etv;
+
         return DeviceLocationDA.updateDeviceData$(deviceData)
         .map(deviceLocation => {
             console.log('---11--- updateDeviceData ==> ', deviceLocation);
