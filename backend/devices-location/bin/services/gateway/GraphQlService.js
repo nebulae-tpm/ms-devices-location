@@ -36,7 +36,7 @@ class GraphQlService {
                 //send response back if neccesary
                 .mergeMap(({ response, correlationId, replyTo }) => {
                     if (replyTo) {
-                        console.log('GraphQl response3 => ', response);
+                        console.log('GraphQl response3 1=> ', response);
                         return broker.send$(replyTo, 'gateway.graphql.Query.response', response, { correlationId });
                     }else{
                         return Rx.Observable.of(undefined);
