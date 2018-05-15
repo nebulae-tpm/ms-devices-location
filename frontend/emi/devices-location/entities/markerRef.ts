@@ -114,6 +114,7 @@ export class MarkerRef extends google.maps.Marker {
     this.index = 0;
     this.deltaLat = (lat - this.getPosition().lat())/this.numDeltas;
     this.deltaLng = (lng - this.getPosition().lng())/this.numDeltas;
+
     this.moveMarker();
 }
 
@@ -127,7 +128,7 @@ export class MarkerRef extends google.maps.Marker {
 
     if(this.index != this.numDeltas){
         this.index++;
-        setTimeout(this.moveMarker, this.delay);
+        setTimeout(this.moveMarker.bind(this), this.delay);
     }
   }
 
