@@ -63,7 +63,8 @@ class DeviceLocation {
         console.log('DATA updateDeviceData: ', data);
         //const deviceData = {aid: data.aid, hostname: data.data.hostname, type: data.data.type, version: data.etv};
         let deviceData = data.data;
-        deviceData['version'] = data.etv;
+        deviceData['aid'] = data.aid;
+        // deviceData['version'] = data.etv;
 
         return DeviceLocationDA.updateDeviceData$(deviceData)
         .map(deviceLocation => {
