@@ -37,6 +37,10 @@ export class MarkerRef extends google.maps.Marker {
   '<p> <strong>Vehículo: </strong>$serial</p>' +
   '</div>';
 
+  titleString = '<h2>Detalles del vehículo</h2>' +
+  '<p> <strong>Placa: </strong>$plate</p>' +
+  '<p> <strong>Vehículo: </strong>$serial</p>';
+
   infoWindow =  new google.maps.InfoWindow({
     content: this.contentString
   });
@@ -65,47 +69,47 @@ export class MarkerRef extends google.maps.Marker {
     this.setClickable(true);
     this.setLabel('');
     this.setTitle('TPM Medellín');
-    this.setDraggable(true);
+    //this.setDraggable(false);
     this.setIcon('./assets/devices-location/tpm_bus_30_30.png');
     this.vehicle = vehicle;
     this.lastTimeLocationReported = 0;
   }
 
-  updateLocation1(lng: number, lat: number, delay: number, lastTimeLocationReported: number): void {
-    console.log('Update location -> '+ lng + " -- "+ lat + " - Timestamp: " + lastTimeLocationReported);
-    // X refer to logitude
-    // Y refer to latitude
-    this.setVisibility(100);
-    this.lastTimeLocationReported = lastTimeLocationReported;
-    const currentLng = this.getPosition().lng();
-    const currentLat = this.getPosition().lat();
-    const updateDelay = 5;
-    const vx = (lng - currentLng) / delay;
-    const vy = (lat - currentLat) / delay;
-    const timer = Rx.Observable.interval(updateDelay);
-    const maximunSteps = delay / updateDelay;
-    let steps = 0;
-    const subcription = timer.subscribe(() => {
-      this.setPosition(
-        new google.maps.LatLng(
-          this.getPosition().lat() + vy * updateDelay,
-          this.getPosition().lng() + vx * updateDelay
-        )
-      );
-      steps++;
-      const distance = this.distanceBetweenTwoPoints(
-        this.getPosition().lng(), lng,
-        this.getPosition().lat(), lat
-      );
-      if (steps >= maximunSteps || distance < 0.00001) {
-        subcription.unsubscribe();
-      }
-    });
-  }
+  // updateLocation1(lng: number, lat: number, delay: number, lastTimeLocationReported: number): void {
+  //   console.log('Update location -> '+ lng + " -- "+ lat + " - Timestamp: " + lastTimeLocationReported);
+  //   // X refer to logitude
+  //   // Y refer to latitude
+  //   this.setVisibility(100);
+  //   this.lastTimeLocationReported = lastTimeLocationReported;
+  //   const currentLng = this.getPosition().lng();
+  //   const currentLat = this.getPosition().lat();
+  //   const updateDelay = 5;
+  //   const vx = (lng - currentLng) / delay;
+  //   const vy = (lat - currentLat) / delay;
+  //   const timer = Rx.Observable.interval(updateDelay);
+  //   const maximunSteps = delay / updateDelay;
+  //   let steps = 0;
+  //   const subcription = timer.subscribe(() => {
+  //     this.setPosition(
+  //       new google.maps.LatLng(
+  //         this.getPosition().lat() + vy * updateDelay,
+  //         this.getPosition().lng() + vx * updateDelay
+  //       )
+  //     );
+  //     steps++;
+  //     const distance = this.distanceBetweenTwoPoints(
+  //       this.getPosition().lng(), lng,
+  //       this.getPosition().lat(), lat
+  //     );
+  //     if (steps >= maximunSteps || distance < 0.00001) {
+  //       subcription.unsubscribe();
+  //     }
+  //   });
+  // }
 
-  distanceBetweenTwoPoints(x1, y1, x2, y2) {
-    return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-  }
+  // distanceBetweenTwoPoints(x1, y1, x2, y2) {
+  //   return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+  // }
 
   updateLocation(lng: number, lat: number, delay: number, lastTimeLocationReported: number){
     console.log('Update location -> '+ lng + " -- "+ lat + " - Timestamp: " + lastTimeLocationReported);
@@ -136,6 +140,10 @@ export class MarkerRef extends google.maps.Marker {
     this.setOpacity(visibility / 100);
   }
 
+  setTitleMarker(title: string): void {
+    this.setTitle(title);
+  }
+
   inizialiteEvents(){
     this.addListener('click', (e: google.maps.MouseEvent) => { this.clickEvent.next(e); });
     this.addListener('dblclick', (e) => { this.dblclickEvent.next(e); });
@@ -148,4 +156,8 @@ export class MarkerRef extends google.maps.Marker {
 export const MarkerRefInfoWindowContent = '<div> <h2>{TITLE}</h2>' +
 '<p> <strong>{PLATE}: </strong>$plate</p>' +
 '<p> <strong>{VEHICLE}: </strong>$serial</p>' +
-'</div>'
+'</div>';
+
+export const MarkerRefTitleContent =
+'{PLATE}: $plate, ' +
+'{VEHICLE}: $serial';
