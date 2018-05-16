@@ -9,6 +9,7 @@ export const getDevicesLocation = gql`
             lng
             lat
             hostname
+            groupName
         }
     }
 `;
@@ -22,6 +23,7 @@ export const deviceLocationReportedEvent = gql`
             lng
             lat
             hostname
+            groupName
         }
     }
 `;

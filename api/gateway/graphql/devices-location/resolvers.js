@@ -21,7 +21,6 @@ module.exports = {
   Subscription: {
     deviceLocationReportedEvent: {
       subscribe: withFilter((payload, variables, context, info) => {
-        console.log("withFilter 1");
         return pubsub.asyncIterator('deviceLocationReportedEvent');
       },
         (payload, variables, context, info) => {

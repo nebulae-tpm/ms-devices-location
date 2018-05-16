@@ -8,7 +8,8 @@ export const locale = {
         INFOWINDOW: {
           TITLE: 'Vehicle details',
           PLATE: 'Plate',
-          VEHICLE: 'Serial number'
+          VEHICLE: 'Serial number',
+          GROUPNAME: 'Group name'
         }
       }
   }

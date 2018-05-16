@@ -76,6 +76,7 @@ class DeviceLocation {
                 lat: deviceLocation.loc ? deviceLocation.loc.geojson.coordinates[1]: "",
                 lng: deviceLocation.loc ? deviceLocation.loc.geojson.coordinates[0]: "",
                 hostname: deviceLocation.hostname,
+                groupName: deviceLocation.groupName,
                 type: deviceLocation.type
             }            
             console.log('---22--- updateDeviceData ==> ', deviceLocationReportedEvent);

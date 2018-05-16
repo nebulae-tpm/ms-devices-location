@@ -10,6 +10,8 @@ type DeviceLocationReportedEvent {
   lat: Float
   "Hostname of the device"
   hostname: String
+  "Group name which the device belongs"
+  groupName: String
 }
 
 type Query {

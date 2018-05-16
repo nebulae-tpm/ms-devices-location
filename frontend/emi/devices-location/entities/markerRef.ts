@@ -4,7 +4,8 @@ import {} from 'googlemaps';
 
 export class Vehicle{
     plate: '';
-    serial: ''
+    serial: '';
+    groupName: '';
 }
 
 export class MarkerRef extends google.maps.Marker {
@@ -156,6 +157,7 @@ export class MarkerRef extends google.maps.Marker {
 export const MarkerRefInfoWindowContent = '<div> <h2>{TITLE}</h2>' +
 '<p> <strong>{PLATE}: </strong>$plate</p>' +
 '<p> <strong>{VEHICLE}: </strong>$serial</p>' +
+'<p> <strong>{GROUPNAME}: </strong>$groupName</p>' +
 '</div>';
 
 export const MarkerRefTitleContent =
