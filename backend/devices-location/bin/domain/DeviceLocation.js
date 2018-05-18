@@ -26,7 +26,8 @@ class DeviceLocation {
                 lat: deviceLocation.loc.geojson.coordinates[1],
                 lng: deviceLocation.loc.geojson.coordinates[0],
                 hostname: deviceLocation.hostname,
-                type: deviceLocation.type
+                type: deviceLocation.type,
+                groupName: deviceLocation.groupName
             }
             return deviceLocationReportedEvent;
         }).toArray();
@@ -48,7 +49,8 @@ class DeviceLocation {
                 lat: deviceLocation.loc ? deviceLocation.loc.geojson.coordinates[1]: "",
                 lng: deviceLocation.loc ? deviceLocation.loc.geojson.coordinates[0]: "",
                 hostname: deviceLocation.hostname,
-                type: deviceLocation.type
+                type: deviceLocation.type,
+                groupName: deviceLocation.groupName
             }            
             return deviceLocationReportedEvent;
         }).mergeMap(formattedLoc => broker.send$('materialized-view-updates','deviceLocationReportedEvent',formattedLoc));
