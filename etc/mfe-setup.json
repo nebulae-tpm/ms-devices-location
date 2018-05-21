@@ -21,7 +21,7 @@
             {
                 "groupId": "DEVICES",
                 "id": "devices-location",
-                "icon": "account_circle",
+                "icon": "location_on",
                 "translate": {
                     "en": "Location",
                     "es": "Ubicación"

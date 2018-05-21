@@ -67,11 +67,17 @@ export class MarkerRef extends google.maps.Marker {
 
   constructor(vehicle: Vehicle, opts?: google.maps.MarkerOptions) {
     super(opts);
+    const icon = {
+      url: "./assets/devices-location/location-icon.svg",
+      anchor: new google.maps.Point(30,30),
+      scaledSize: new google.maps.Size(30,30)
+    };
     this.setClickable(true);
     this.setLabel('');
-    this.setTitle('TPM Medellín');
+    this.setTitle('D-HUB');
     //this.setDraggable(false);
-    this.setIcon('./assets/devices-location/tpm_bus_30_30.png');
+    //this.setIcon('./assets/devices-location/tpm_bus_30_30.png');
+    this.setIcon(icon);
     this.vehicle = vehicle;
     this.lastTimeLocationReported = 0;
   }

@@ -58,14 +58,12 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     this.deviceLocationQuerySubscription = this.devicesLocationService
       .getDevicesLocation(0, 400)
       .pipe(
-        tap(val => console.log('deviceLocationDataSubscription', val)),
         mergeMap(devicesLocation => Observable.from(devicesLocation.data.getDevicesLocation)),
         mergeMap((deviceLocation: any) => {
           return this.manageMarkers(deviceLocation);
         }),
         filter(([marker, deviceLocation]) => (marker as MarkerRef).lastTimeLocationReported < deviceLocation.timestamp)
       ).subscribe(([marker, deviceLocation]) => {
-        console.log('deviceLocationDataSubscription DATA => ');
         if (!marker.getMap()) {
           marker.setMap(this.map);
           const loc = new google.maps.LatLng(marker.getPosition().lat(), marker.getPosition().lng());
@@ -83,7 +81,6 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     this.deviceLocationSubscriptionSubscription = this.devicesLocationService
       .subscribeDeviceLocation()
       .pipe(
-        tap(val => console.log('deviceLocationSubscription', val)),
         mergeMap(deviceLocation => {
           return this.manageMarkers(deviceLocation.data.deviceLocationReportedEvent);
         }),
@@ -137,7 +134,6 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
   }
 
   manageMarkers(deviceLocation): Observable<[MarkerRef, any]> {
-    console.log('manageMarkers');
     return Observable.from(this.markers)
       .filter(marker => {
         return marker.vehicle.serial == deviceLocation.id;
