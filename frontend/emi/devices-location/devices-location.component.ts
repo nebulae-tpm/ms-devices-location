@@ -52,6 +52,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    
     this.initMap();
     this.bounds = new google.maps.LatLngBounds();
 
