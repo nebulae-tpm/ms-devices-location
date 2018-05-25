@@ -1,6 +1,6 @@
 'use strict'
 
-const deviceLocation = require('../../domain/DeviceLocation')();
+const device = require('../../domain/Device')();
 const broker = require('../../tools/broker/BrokerFactory')();
 const Rx = require('rxjs');
 const jsonwebtoken = require('jsonwebtoken');
@@ -17,7 +17,8 @@ class GraphQlService {
 
     generateFunctionMap() {
         return {
-            'gateway.graphql.query.getDevicesLocation': deviceLocation.getDevicesLocation$
+            'gateway.graphql.query.getDevicesLocation': device.getDevices$,
+            'gateway.graphql.query.getDeviceGroups': device.getDeviceGroups$
         };
     }
 
@@ -35,11 +36,9 @@ class GraphQlService {
                             return { response, correlationId: message.id, replyTo: message.attributes.replyTo };
                         })
                 )
-                .do(val => console.log('Request processed -> ', new Date()))
                 //send response back if neccesary
                 .mergeMap(({ response, correlationId, replyTo }) => {
                     if (replyTo) {
-                        console.log('GraphQl response3 1=> ', new Date(), response);
                         return broker.send$(replyTo, 'gateway.graphql.Query.response', response, { correlationId });
                     }else{
                         return Rx.Observable.of(undefined);

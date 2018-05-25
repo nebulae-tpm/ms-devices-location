@@ -1,24 +1,51 @@
 "Device Location report"
-type DeviceLocationReportedEvent {
+type DeviceLocationEvent {
   "Device ID"
   id: String
-  "Timestamp when the device sent its location"
-  timestamp: BigInt
-  "Longitude coordinates"
-  lng: Float
-  "Latitude coordinates"
-  lat: Float
+  "Current coordinates of the device"
+  currentLocation: Coordinates
   "Hostname of the device"
   hostname: String
   "Group name which the device belongs"
   groupName: String
+  "Boolean that indicates if a device is alarmed by RAM"
+  ramUsageAlarmActivated: Boolean
+  "Boolean that indicates if a device is alarmed by SD"
+  sdUsageAlarmActivated: Boolean
+  "Boolean that indicates if a device is alarmed by CPU"
+  cpuUsageAlarmActivated: Boolean
+  "Boolean that indicates if a device is alarmed by temperature"
+  temperatureAlarmActivated: Boolean
+  "List of the last device location reported by the device"
+  locationPath: [Coordinates]
 }
 
+"Device location coordinates"
+type Coordinates {
+  "Latitude coordinates"
+  lat: Float
+  "Longitude coordinates"
+  lng: Float,
+  "Timestamp when the device sent its location"
+  timestamp: BigInt
+}
+
+
+"Device group names"
+type DeviceGroup {
+  "Group name"
+  name: String
+}
+
+
 type Query {
-  "Get a report summary of location devices."
-  getDevicesLocation(page: Int, count: Int): [DeviceLocationReportedEvent]
+  "Gets a report summary of location devices."
+  getDevicesLocation(serial: String, hostname: String): [DeviceLocationEvent]
+  "Gets the device groups."
+  getDeviceGroups: [DeviceGroup]
 }
 
 type Subscription {
-  deviceLocationReportedEvent: DeviceLocationReportedEvent
+  "Event fired when a device is modified or when a device reports information about its location"
+  deviceLocationEvent: DeviceLocationEvent
 }

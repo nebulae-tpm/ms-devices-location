@@ -9,7 +9,8 @@ export const locale = {
           TITLE: 'Detalles del vehículo',
           PLATE: 'Placa',
           VEHICLE: 'N° serial',
-          GROUPNAME: 'Cuenca'
+          GROUPNAME: 'Cuenca',
+          LAST_LOCATION_TIMESTAMP: 'Última posición'
         }
       }
   }

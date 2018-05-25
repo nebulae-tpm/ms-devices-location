@@ -57,13 +57,13 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     this.bounds = new google.maps.LatLngBounds();
 
     this.deviceLocationQuerySubscription = this.devicesLocationService
-      .getDevicesLocation(0, 400)
+      .getDevicesLocationByFilter(undefined, undefined)
       .pipe(
         mergeMap(devicesLocation => Observable.from(devicesLocation.data.getDevicesLocation)),
         mergeMap((deviceLocation: any) => {
           return this.manageMarkers(deviceLocation);
         }),
-        filter(([marker, deviceLocation]) => (marker as MarkerRef).lastTimeLocationReported < deviceLocation.timestamp)
+        filter(([marker, deviceLocation]) => (marker as MarkerRef).lastTimeLocationReported < deviceLocation.currentLocation.timestamp)
       ).subscribe(([marker, deviceLocation]) => {
         if (!marker.getMap()) {
           marker.setMap(this.map);
@@ -71,7 +71,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
           this.bounds.extend(loc);
           this.addMarkerToMap(marker);
         } else {
-          marker.updateLocation(deviceLocation.lng, deviceLocation.lat, 1000, deviceLocation.timestamp);
+          marker.updateLocation(deviceLocation.currentLocation.lng, deviceLocation.currentLocation.lat, 1000, deviceLocation.currentLocation.timestamp);
         }},
         error => console.error(error),
         () => {
@@ -85,13 +85,13 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
         mergeMap(deviceLocation => {
           return this.manageMarkers(deviceLocation.data.deviceLocationReportedEvent);
         }),
-        filter(([marker, deviceLocation]) => (marker as MarkerRef).lastTimeLocationReported < deviceLocation.timestamp)
+        filter(([marker, deviceLocation]) => (marker as MarkerRef).lastTimeLocationReported < deviceLocation.currentLocation.timestamp)
       ).subscribe(([marker, deviceLocation]) => {
         if (!marker.getMap()) {
           marker.setMap(this.map);
           this.addMarkerToMap(marker);
         } else {
-          marker.updateLocation(deviceLocation.lng, deviceLocation.lat, 1000, deviceLocation.timestamp);
+          marker.updateLocation(deviceLocation.currentLocation.lng, deviceLocation.currentLocation.lat, 1000, deviceLocation.currentLocation.timestamp);
         }
       });
 
@@ -105,8 +105,14 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
         const serialStr = (m.vehicle.serial ? m.vehicle.serial+'': '');
         const plateStr = (m.vehicle.plate? m.vehicle.plate: '');
         const groupNameStr = (m.vehicle.groupName ? m.vehicle.groupName: '');
+        const lastLocationTimestampStr = (m.vehicle.groupName ? m.vehicle.groupName: '');
         let content = m.infoWindow.getContent();
-        content = originalInfoWindowContent.toString().replace('{PLATE}', translations.PLATE).replace('{TITLE}', translations.TITLE).replace('{VEHICLE}', translations.VEHICLE).replace('{GROUPNAME}', translations.GROUPNAME);
+        content = originalInfoWindowContent.toString()
+        .replace('{PLATE}', translations.PLATE)
+        .replace('{TITLE}', translations.TITLE)
+        .replace('{VEHICLE}', translations.VEHICLE)
+        .replace('{GROUPNAME}', translations.GROUPNAME)
+        .replace('{LAST_LOCATION_TIMESTAMP}', translations.LAST_LOCATION_TIMESTAMP);
         content = content.toString().replace('$plate', plateStr);
         content = content.replace('$serial', serialStr);
         m.infoWindow.setContent(content);
@@ -135,17 +141,23 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
   }
 
   manageMarkers(deviceLocation): Observable<[MarkerRef, any]> {
+    console.log('manageMarkers =====> ', deviceLocation);
     return Observable.from(this.markers)
       .filter(marker => {
         return marker.vehicle.serial == deviceLocation.id;
       })
       .defaultIfEmpty(
         new MarkerRef(
-          { plate: deviceLocation.hostname, serial: deviceLocation.id, groupName:  deviceLocation.groupName},
+          { 
+            plate: deviceLocation.hostname, 
+            serial: deviceLocation.id, 
+            groupName:  deviceLocation.groupName, 
+            lastLocationTimestamp: deviceLocation.currentLocation.timestamp
+          },
           {
             position: {
-              lat: parseFloat(deviceLocation.lat),
-              lng: parseFloat(deviceLocation.lng)
+              lat: parseFloat(deviceLocation.currentLocation.lat),
+              lng: parseFloat(deviceLocation.currentLocation.lng)
             }, map: null
           })
       )
@@ -169,22 +181,26 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
       this.translate.get('MARKER.INFOWINDOW.TITLE'),
       this.translate.get('MARKER.INFOWINDOW.PLATE'),
       this.translate.get('MARKER.INFOWINDOW.VEHICLE'),
-      this.translate.get('MARKER.INFOWINDOW.GROUPNAME')
+      this.translate.get('MARKER.INFOWINDOW.GROUPNAME'),
+      this.translate.get('MARKER.INFOWINDOW.LAST_LOCATION_TIMESTAMP')
     )
-      .map(([marker, title, plate, vehicle, groupName]) => {
+      .map(([marker, title, plate, vehicle, groupName, lastLocationTimestamp]) => {
         let infoWindowContent = MarkerRefInfoWindowContent;
 
         const serialStr = (marker.vehicle.serial ? marker.vehicle.serial+'': '');
         const groupNameStr = (marker.vehicle.groupName ? marker.vehicle.groupName: '');
+        const lastLocationTimestampStr = (marker.vehicle.lastLocationTimestamp ? marker.vehicle.lastLocationTimestamp: '');
         const plateStr = (marker.vehicle.plate? marker.vehicle.plate: '');
 
         infoWindowContent = infoWindowContent.toString().replace('{TITLE}', title);
         infoWindowContent = infoWindowContent.toString().replace('{PLATE}', plate);
         infoWindowContent = infoWindowContent.toString().replace('{VEHICLE}', vehicle);
         infoWindowContent = infoWindowContent.toString().replace('{GROUPNAME}', groupName);
+        infoWindowContent = infoWindowContent.toString().replace('{LAST_LOCATION_TIMESTAMP}', lastLocationTimestamp);
         infoWindowContent = infoWindowContent.toString().replace('$plate', plateStr);
         infoWindowContent = infoWindowContent.toString().replace('$serial', serialStr);
         infoWindowContent = infoWindowContent.toString().replace('$groupName', groupNameStr);
+        infoWindowContent = infoWindowContent.toString().replace('$lastLocationTimestamp', lastLocationTimestampStr);
         marker.infoWindow.setContent(infoWindowContent);
 
         let titleContent = MarkerRefTitleContent;

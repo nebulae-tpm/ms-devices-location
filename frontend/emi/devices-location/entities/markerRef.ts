@@ -6,6 +6,7 @@ export class Vehicle{
     plate: '';
     serial: '';
     groupName: '';
+    lastLocationTimestamp: undefined;
 }
 
 export class MarkerRef extends google.maps.Marker {
@@ -157,13 +158,14 @@ export class MarkerRef extends google.maps.Marker {
     //this.addListener('dragend', (e) => { this.dragendEvent.next(e); });
     // this.addListener('position_changed', (e) => { this.position_changedEvent.next(e); });
   }
-
 }
 
 export const MarkerRefInfoWindowContent = '<div> <h2>{TITLE}</h2>' +
 '<p> <strong>{PLATE}: </strong>$plate</p>' +
 '<p> <strong>{VEHICLE}: </strong>$serial</p>' +
 '<p> <strong>{GROUPNAME}: </strong>$groupName</p>' +
+'<p align="right"> $lastLocationTimestamp </p>'+
+'<p align="right"> <strong> {LAST_LOCATION_TIMESTAMP} </strong> </p>'
 '</div>';
 
 export const MarkerRefTitleContent =

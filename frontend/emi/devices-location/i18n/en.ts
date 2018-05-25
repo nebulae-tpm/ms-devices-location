@@ -9,7 +9,8 @@ export const locale = {
           TITLE: 'Vehicle details',
           PLATE: 'Plate',
           VEHICLE: 'Serial number',
-          GROUPNAME: 'Group name'
+          GROUPNAME: 'Group name',
+          LAST_LOCATION_TIMESTAMP: 'Last position'
         }
       }
   }

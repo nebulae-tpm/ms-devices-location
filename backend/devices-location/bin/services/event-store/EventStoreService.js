@@ -1,5 +1,5 @@
 const Rx = require('rxjs');
-const deviceLocation = require('../../domain/DeviceLocation')();
+const device = require('../../domain/Device')();
 const eventSourcing = require('../../tools/EventSourcing')();
 
 /**
@@ -24,7 +24,7 @@ class EventStoreService {
         //default error handler
         const onErrorHandler = (error) => {
             console.error('Error handling  EventStore incoming event', error);
-            procces.exit(1);
+            process.exit(1);
         };
         //default onComplete handler
         const onCompleteHandler = () => {
@@ -34,6 +34,14 @@ class EventStoreService {
         return Rx.Observable.from([
             { aggregateType: 'Device', eventType: 'DeviceDeviceStateReported', onErrorHandler, onCompleteHandler },
             { aggregateType: 'Device', eventType: 'DeviceLocationReported', onErrorHandler, onCompleteHandler },
+            { aggregateType: 'Device', eventType: 'DeviceRamuUsageAlarmActivated', onErrorHandler, onCompleteHandler },
+            { aggregateType: 'Device', eventType: 'DeviceRamUsageAlarmDeactivated', onErrorHandler, onCompleteHandler },
+            { aggregateType: 'Device', eventType: 'DeviceSdUsageAlarmActivated', onErrorHandler, onCompleteHandler },
+            { aggregateType: 'Device', eventType: 'DeviceSdUsageAlarmDeactivated', onErrorHandler, onCompleteHandler },
+            { aggregateType: 'Device', eventType: 'DeviceCpuUsageAlarmActivated', onErrorHandler, onCompleteHandler },
+            { aggregateType: 'Device', eventType: 'DeviceCpuUsageAlarmDeactivated', onErrorHandler, onCompleteHandler },
+            { aggregateType: 'Device', eventType: 'DeviceTemperatureAlarmActivated', onErrorHandler, onCompleteHandler },
+            { aggregateType: 'Device', eventType: 'DeviceTemperatureAlarmDeactivated', onErrorHandler, onCompleteHandler },
         ]).map(params => this.subscribeEventHandler(params));
     }
 
@@ -76,8 +84,16 @@ class EventStoreService {
      */
     generateFunctionMap() {
         return {
-            'DeviceLocationReported': { fn: deviceLocation.updateDeviceLocation$, obj: deviceLocation },
-            'DeviceDeviceStateReported': { fn: deviceLocation.updateDeviceData$, obj: deviceLocation }
+            'DeviceLocationReported': { fn: device.updateDeviceLocation$, obj: device },
+            'DeviceDeviceStateReported': { fn: device.updateDeviceData$, obj: device },
+            'DeviceRamuUsageAlarmActivated': { fn: device.updateDeviceAlarmsState$, obj: device },
+            'DeviceRamUsageAlarmDeactivated': { fn: device.updateDeviceAlarmsState$, obj: device },
+            'DeviceSdUsageAlarmActivated': { fn: device.updateDeviceAlarmsState$, obj: device },
+            'DeviceSdUsageAlarmDeactivated': { fn: device.updateDeviceAlarmsState$, obj: device },
+            'DeviceCpuUsageAlarmActivated': { fn: device.updateDeviceAlarmsState$, obj: device },
+            'DeviceCpuUsageAlarmDeactivated': { fn: device.updateDeviceAlarmsState$, obj: device },
+            'DeviceTemperatureAlarmActivated': { fn: device.updateDeviceAlarmsState$, obj: device },
+            'DeviceTemperatureAlarmDeactivated': { fn: device.updateDeviceAlarmsState$, obj: device }
         };
     }
 
