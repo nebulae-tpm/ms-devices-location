@@ -1,8 +1,10 @@
 export const locale = {
   lang: 'en',
   data: {
-      'MAPS': {
-          'SEARCH_PLACEHOLDER': 'Interesting place'
+      'LOCATION': {
+          'SEARCH_PLACEHOLDER': 'Interesting place',
+          'DEVICE_GROUP_PLACEHOLDER': 'Device groups',
+          'SELECT_DEVICE_GROUP': 'Select a device group'
       },
       MARKER: {
         INFOWINDOW: {

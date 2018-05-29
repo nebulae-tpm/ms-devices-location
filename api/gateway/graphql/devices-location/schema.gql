@@ -39,8 +39,8 @@ type DeviceGroup {
 
 
 type Query {
-  "Gets a report summary of location devices."
-  getDevicesLocation(serial: String, hostname: String): [DeviceLocationEvent]
+  "Gets the devices and their location data. If the filter is applied the devices will be filtered by serial, hostname or group name of the device"
+  getDevicesLocation(filterText: String, groupName: String, limit: Int): [DeviceLocationEvent]
   "Gets the device groups."
   getDeviceGroups: [DeviceGroup]
 }

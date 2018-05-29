@@ -42,7 +42,7 @@ class Device {
      * @param {*} authToken 
      */
     getDevices$({ root, args, jwt }, authToken) {
-        return DeviceDA.getDevices$(args.serial, args.hostname)
+        return DeviceDA.getDevices$(args.filterText, args.groupName, args.limit)
             //.mergeMap(devicesLocations => Rx.Observable.from(devicesLocations))
             .concatMap(device =>
                 Rx.Observable.forkJoin(
@@ -51,7 +51,6 @@ class Device {
                 )
             )
             .map(([deviceLocation, historicalDeviceLocation]) => {
-                console.log("concatMap ==========>", deviceLocation);
                 const deviceLocationEvent = {
                     id: deviceLocation.id,
                     currentLocation: deviceLocation.loc ? {
@@ -183,7 +182,11 @@ class Device {
      * @param {*} authToken Auth token
      */
     updateDeviceData$(deviceDeviceState, authToken) {
-        const deviceData = { id: deviceDeviceState.aid, hostname: deviceDeviceState.data.hostname, groupName: deviceDeviceState.data.groupName, version: deviceDeviceState.etv };
+        const deviceData = { 
+            id: deviceDeviceState.aid, 
+            hostname: (deviceDeviceState.data.hostname ? deviceDeviceState.data.hostname: undefined), 
+            groupName: (deviceDeviceState.data.groupName ? deviceDeviceState.data.groupName: undefined), 
+            version: deviceDeviceState.etv };
 
         let obs = Rx.Observable.of(undefined);
         if(deviceDeviceState.data.groupName){

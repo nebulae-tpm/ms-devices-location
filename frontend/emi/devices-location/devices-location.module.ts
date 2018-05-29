@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { DevicesLocationService } from './devices-location.service';
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../../../core/modules/shared.module';
@@ -19,7 +20,7 @@ const routes = [
     declarations: [
         DevicesLocationComponent
     ],
-    providers: [DevicesLocationService]
+    providers: [DevicesLocationService, DatePipe]
 })
 export class DevicesLocationModule
 {

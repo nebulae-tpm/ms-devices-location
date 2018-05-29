@@ -1,8 +1,10 @@
 export const locale = {
   lang: 'es',
   data: {
-      'MAPS': {
-          'SEARCH_PLACEHOLDER': 'Lugar de interés'
+      'LOCATION': {
+          'SEARCH_PLACEHOLDER': 'Lugar de interés',
+          'DEVICE_GROUP_PLACEHOLDER': 'Cuencas',
+          'SELECT_DEVICE_GROUP': 'Seleccione una cuenca'
       },
       MARKER: {
         INFOWINDOW: {

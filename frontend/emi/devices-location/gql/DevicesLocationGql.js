@@ -2,8 +2,8 @@ import gql from 'graphql-tag';
 
 // This query gets the devices location
 export const getDevicesLocation = gql`
-    query getDevicesLocation($serial: String, $hostname:String){
-        getDevicesLocation(serial: $serial, hostname: $hostname){
+    query getDevicesLocation($filterText: String, $groupName: String, $limit: Int){
+        getDevicesLocation(filterText: $filterText, groupName: $groupName, limit: $limit){
             id
             currentLocation{
               lat
@@ -46,6 +46,15 @@ export const deviceLocationEvent = gql`
               lng
               timestamp  
             }
+        }
+    }
+`;
+
+// This subscription reports information about the location of each device
+export const getDeviceGroups = gql`
+    query getDeviceGroups{
+        getDeviceGroups{
+            name
         }
     }
 `;

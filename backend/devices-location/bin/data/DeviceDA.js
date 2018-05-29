@@ -23,19 +23,24 @@ class DeviceDA {
      * gets DeviceLocation
      * @param {string} type 
      */
-    static getDevices$(serial, hostname) {
+    static getDevices$(filterText, groupName, limit) {
         let filter = {};
-        if(serial){
-            filter['id'] = serial;
+        if(filterText){
+            filter['$text'] = { $search: filterText };
         }
-        if(hostname){
-            filter['hostname'] = hostname;
+
+        if(groupName){
+            filter['groupName'] = groupName;
         }
+        
         filter['loc'] = { $exists: true };
 
         return Rx.Observable.create(async observer => {
             const collection = mongoDB.db.collection(collectionName);
             const cursor = collection.find(filter);
+            if (limit) {
+                cursor.limit(limit);
+            }
 
             let obj = await this.extractNextFromMongoCursor(cursor);
             while (obj) {

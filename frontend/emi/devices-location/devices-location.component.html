@@ -6,9 +6,30 @@
     <div class="search" fxLayout="row" fxLayoutAlign="start center">
       <mat-icon class="icon s-24">search</mat-icon>
     </div>
-    <mat-form-field class="w-100-p">
-      <input id="pac-input" #input matInput autocorrect="off" placeholder="{{ 'MAPS.SEARCH_PLACEHOLDER' | translate }}" autocapitalize="off" spellcheck="off" type="text">
+    <mat-form-field class="w-45-p">
+      <input matInput placeholder="Devices" aria-label="Devices" [matAutocomplete]="auto" [formControl]="deviceFilterCtrl">
+      <mat-autocomplete #auto="matAutocomplete" (optionSelected)='getSelectedDevice($event.option.value)'>
+          <mat-option *ngFor="let filteredDevice of deviceLocationQueryFiltered$ | async" [value]="filteredDevice.id">
+            <!--<img style="vertical-align:middle;" aria-hidden src="{{filteredDevice.flag}}" height="25" />-->
+            <span>{{ filteredDevice.id }}</span> |
+            <small>{{filteredDevice.hostname}}</small> |
+            <small>{{filteredDevice.groupName}}</small>
+          </mat-option>
+        </mat-autocomplete>
     </mat-form-field>
+
+    <mat-form-field class="w-45-p">
+      <mat-select placeholder="{{ 'LOCATION.DEVICE_GROUP_PLACEHOLDER' | translate }}" [(value)]="selectedDeviceGroup"
+      (change)="onDeviceGroupChanged($event.value)">
+        <mat-option>{{ 'LOCATION.SELECT_DEVICE_GROUP' | translate }}</mat-option>
+        <mat-option *ngFor="let deviceGroup of deviceGroups$ | async" [value]="deviceGroup.name">
+          {{deviceGroup.name}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+
+
   </div>
   <!-- / HEADER -->
 

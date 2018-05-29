@@ -8,7 +8,7 @@ import { GatewayService } from '../../../api/gateway.service';
 import { Observable } from 'rxjs/Observable';
 import { HttpClient } from '@angular/common/http';
 import * as Rx from 'rxjs';
-import { getDevicesLocation, deviceLocationEvent } from './gql/DevicesLocationGql';
+import { getDevicesLocation, deviceLocationEvent, getDeviceGroups } from './gql/DevicesLocationGql';
 import { map } from 'rxjs/operator/map';
 
 @Injectable()
@@ -24,15 +24,23 @@ export class DevicesLocationService {
       });
   }
 
-  getDevicesLocationByFilter(serial: String, hostname: String): Observable<any> {
-    console.log('test2');
+  //getDevicesLocationByFilter(serial: String, hostname: String, groupName: String): Observable<any> {
+  getDevicesLocationByFilter(filterText: String, groupName: String, limit: number): Observable<any> {
     return this.gateway.apollo
       .query<any>({
         query: getDevicesLocation,
         variables: {
-          serial: serial,
-          hostname: hostname
+          filterText: filterText,
+          groupName: groupName,
+          limit: limit
         },
+      });
+  }
+
+  getDeviceGroups(): Observable<any> {
+    return this.gateway.apollo
+      .query<any>({
+        query: getDeviceGroups
       });
   }
 
