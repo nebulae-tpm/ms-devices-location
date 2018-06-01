@@ -140,7 +140,7 @@ jobs:
             mkdir ~/nebulae/backend
             cp ~/nebulae/go/mbinit ~/nebulae/repo/backend/devices-location/
             export DOCKERHUB_IMAGE=devices-location.backend.devices-location
-            export DOCKERHUB_TAG=0.0.48
+            export DOCKERHUB_TAG=0.0.49
             gitChanged backend/devices-location || docker build  -t $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE:$DOCKERHUB_TAG -t $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE:latest ~/nebulae/repo/backend/devices-location/
             gitChanged backend/devices-location || docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASS
             gitChanged backend/devices-location || docker push $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE:$DOCKERHUB_TAG
@@ -183,8 +183,6 @@ jobs:
             command: |
               kubectl apply -f ~/nebulae/repo/deployment/gke/              
 
-
-
 workflows: 
   version: 2
   build-and-deploy:
@@ -203,7 +201,7 @@ workflows:
           context: TPM
           requires:
             - prepare
-     - build-backend:
+      - build-backend:
           context: TPM
           requires:
             - prepare

@@ -44,7 +44,6 @@ class DeviceGroupDA {
      * @param {*} deviceGroup 
      */
     static updateDeviceGroup$(deviceGroup) {
-        console.log('updateCurrentLocation ==> ', deviceGroup);
         const collection = mongoDB.db.collection(collectionName);
         return Rx.Observable.bindNodeCallback(collection.findOneAndUpdate.bind(collection))(
             {
