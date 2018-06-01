@@ -30,7 +30,11 @@ class Device {
                 sdUsageAlarmActivated: deviceLocation.sdUsageAlarmActivated,
                 cpuUsageAlarmActivated: deviceLocation.cpuUsageAlarmActivated,
                 temperatureAlarmActivated: deviceLocation.temperatureAlarmActivated,
-                locationPath: historicalDeviceLocation
+                locationPath: {
+                    lng: historicalDeviceLocation.loc.geojson.coordinates[0],
+                    lat: historicalDeviceLocation.loc.geojson.coordinates[1],
+                    timestamp: historicalDeviceLocation.timestamp
+                }
             }
             return deviceLocationEvent;
         });
@@ -65,6 +69,7 @@ class Device {
                     sdUsageAlarmActivated: deviceLocation.sdUsageAlarmActivated,
                     cpuUsageAlarmActivated: deviceLocation.cpuUsageAlarmActivated,
                     temperatureAlarmActivated: deviceLocation.temperatureAlarmActivated,
+                    online: deviceLocation.online,
                     locationPath: historicalDeviceLocation
                 }
                 return deviceLocationEvent;
@@ -112,7 +117,8 @@ class Device {
                     sdUsageAlarmActivated: deviceLocation.sdUsageAlarmActivated,
                     cpuUsageAlarmActivated: deviceLocation.cpuUsageAlarmActivated,
                     temperatureAlarmActivated: deviceLocation.temperatureAlarmActivated,
-                    locationPath: historicalDeviceLocation
+                    online: deviceLocation.online,
+                    locationPath: historicalDevicesLocation
                 }
                 return deviceLocationEvent;
             }).mergeMap(formattedLoc => broker.send$(MATERIALIZED_VIEW_TOPIC, 'deviceLocationEvent', formattedLoc));
@@ -168,6 +174,16 @@ class Device {
                     temperatureAlarmActivated: false
                 }
                 break;
+            case 'DeviceConnected':
+                deviceData = {
+                    online: true
+                }
+                break;
+            case 'DeviceDisconnected':
+                deviceData = {
+                    online: false
+                }
+                break;
             default:
                 return Rx.Observable.empty();
         }
@@ -182,7 +198,7 @@ class Device {
      * @param {*} authToken Auth token
      */
     updateDeviceData$(deviceDeviceState, authToken) {
-        const deviceData = { 
+        const deviceData = {
             id: deviceDeviceState.aid, 
             hostname: (deviceDeviceState.data.hostname ? deviceDeviceState.data.hostname: undefined), 
             groupName: (deviceDeviceState.data.groupName ? deviceDeviceState.data.groupName: undefined), 
@@ -226,6 +242,7 @@ class Device {
                 sdUsageAlarmActivated: deviceLocation.sdUsageAlarmActivated,
                 cpuUsageAlarmActivated: deviceLocation.cpuUsageAlarmActivated,
                 temperatureAlarmActivated: deviceLocation.temperatureAlarmActivated,
+                online: deviceLocation.online,
                 locationPath: historicalDeviceLocation
             }
             return deviceLocationReportedEvent;
@@ -252,6 +269,15 @@ class Device {
             return DeviceGroupDA.updateDeviceGroup$(deviceGroup);
         }
         return Rx.Observable.of(undefined);        
+    }
+
+    /**
+     * Cleans historial of device location
+     * @param {*} cleanHistoricalDeviceLocation 
+     * @param {*} authToken 
+     */
+    cleanHistoricalDeviceLocation$(cleanHistoricalDeviceLocation, authToken){
+        return HistoricalDeviceLocationDA.removeHistoricalDeviceLocation$(cleanHistoricalDeviceLocation);
     }
 
 }

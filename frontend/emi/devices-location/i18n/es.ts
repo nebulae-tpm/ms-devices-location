@@ -4,6 +4,7 @@ export const locale = {
       'LOCATION': {
           'SEARCH_PLACEHOLDER': 'Lugar de interés',
           'DEVICE_GROUP_PLACEHOLDER': 'Cuencas',
+          'DEVICES_PLACEHOLDER': 'Dispositivos',
           'SELECT_DEVICE_GROUP': 'Seleccione una cuenca'
       },
       MARKER: {

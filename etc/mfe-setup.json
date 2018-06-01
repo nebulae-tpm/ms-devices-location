@@ -4,7 +4,8 @@
         "src": "frontend/emi/devices-location",
         "assets" :"frontend/emi/assets/devices-location",
         "indexHeadAmends" : [
-            "<script src='https://maps.googleapis.com/maps/api/js?key=AIzaSyAWKVOt02pFVoLRe_zv0XJ_VpWnkKA7Txg&libraries=places' async defer></script>"
+            "<script src='https://maps.googleapis.com/maps/api/js?key=AIzaSyAWKVOt02pFVoLRe_zv0XJ_VpWnkKA7Txg&libraries=places' async defer></script>",
+            "<script src='./assets/devices-location/markerclusterer.js'></script>"
         ],
         "groups": [
             {
@@ -34,7 +35,8 @@
             }
         ],
         "preBuildCommands": [
-            "npm install @types/googlemaps --save"            
+            "npm install @types/googlemaps --save",
+            "npm install @types/markerclustererplus --save"            
         ],
         "environmentVars": {
             "default": {

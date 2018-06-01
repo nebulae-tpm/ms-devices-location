@@ -1,24 +1,27 @@
 <div id="countdown" class="page-layout simple fullwidth" fusePerfectScrollbar>
 
   <!-- HEADER -->
-  <div class="header mat-accent-bg p-24 h-20" fxLayoutAlign="center center" fxLayout.gt-xs="row" fxLayoutAlign.gt-xs="space-between center">
+  <div class="header mat-accent-bg p-28 h-28" fxLayoutAlign="center center" fxLayout.gt-xs="row" fxLayoutAlign.gt-xs="space-between center">
 
     <div class="search" fxLayout="row" fxLayoutAlign="start center">
       <mat-icon class="icon s-24">search</mat-icon>
     </div>
-    <mat-form-field class="w-45-p">
-      <input matInput placeholder="Devices" aria-label="Devices" [matAutocomplete]="auto" [formControl]="deviceFilterCtrl">
+    <mat-form-field class="w-45-p mt-12">
+      <input matInput placeholder="{{ 'LOCATION.DEVICES_PLACEHOLDER' | translate }}" aria-label="Devices" [matAutocomplete]="auto" [formControl]="deviceFilterCtrl">
       <mat-autocomplete #auto="matAutocomplete" (optionSelected)='getSelectedDevice($event.option.value)'>
           <mat-option *ngFor="let filteredDevice of deviceLocationQueryFiltered$ | async" [value]="filteredDevice.id">
-            <!--<img style="vertical-align:middle;" aria-hidden src="{{filteredDevice.flag}}" height="25" />-->
-            <span>{{ filteredDevice.id }}</span> |
-            <small>{{filteredDevice.hostname}}</small> |
-            <small>{{filteredDevice.groupName}}</small>
+            <img style="vertical-align:middle;" aria-hidden src="./assets/devices-location/bus2.svg" height="20" />
+            <span class="text-boxed text-uppercase">{{ filteredDevice.id }}</span>
+            <span class="text-boxed text-uppercase">{{filteredDevice.hostname}}</span>
+            <span class="text-boxed text-uppercase" *ngIf="filteredDevice.groupName">{{filteredDevice.groupName}}</span>
           </mat-option>
         </mat-autocomplete>
     </mat-form-field>
 
-    <mat-form-field class="w-45-p">
+    <div class="timeline" fxLayout="row" fxLayoutAlign="start center">
+      <mat-icon class="icon s-24">timeline</mat-icon>
+    </div>
+    <mat-form-field class="w-45-p mt-12">
       <mat-select placeholder="{{ 'LOCATION.DEVICE_GROUP_PLACEHOLDER' | translate }}" [(value)]="selectedDeviceGroup"
       (change)="onDeviceGroupChanged($event.value)">
         <mat-option>{{ 'LOCATION.SELECT_DEVICE_GROUP' | translate }}</mat-option>
@@ -28,8 +31,7 @@
       </mat-select>
     </mat-form-field>
 
-
-
+    <button mat-raised-button (click)="openDialog()">Pick one</button>
   </div>
   <!-- / HEADER -->
 
@@ -39,6 +41,7 @@
 
 
  </div>
+
 
 
 

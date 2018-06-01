@@ -31,6 +31,32 @@ class MongoDB {
             });
     }
 
+    /**
+     * Stops DB connections
+     * Returns an Obserable that resolve to a string log
+     */
+    stop$() {
+        return Rx.Observable.create((observer) => {
+        this.client.close();
+        observer.next('Mongo DB Client closed');
+        observer.complete();
+        });
+    }
+
+    /**
+     * Ensure Index creation
+     * Returns an Obserable that resolve to a string log
+     */
+    createIndexes$() {
+        return Rx.Observable.create( async (observer) => {       
+
+        observer.next('Creating index for DevicesLocation.DeviceLocation => ({id: 1, hostname: 1, groupName: 1, type: 1})  ');
+        await this.db.collection('DeviceLocation').createIndex( { id: 1, hostname: 1, groupName: 1, type: 1 });      
+
+        observer.next('All indexes created');
+        observer.complete();
+        });
+    }
 
 }
 

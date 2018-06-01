@@ -4,6 +4,7 @@ export const locale = {
       'LOCATION': {
           'SEARCH_PLACEHOLDER': 'Interesting place',
           'DEVICE_GROUP_PLACEHOLDER': 'Device groups',
+          'DEVICES_PLACEHOLDER': 'Devices',
           'SELECT_DEVICE_GROUP': 'Select a device group'
       },
       MARKER: {

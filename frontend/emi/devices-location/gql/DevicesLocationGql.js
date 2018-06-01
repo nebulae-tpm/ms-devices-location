@@ -16,6 +16,7 @@ export const getDevicesLocation = gql`
             sdUsageAlarmActivated
             cpuUsageAlarmActivated
             temperatureAlarmActivated
+            online
             locationPath{
               lat
               lng
@@ -41,6 +42,7 @@ export const deviceLocationEvent = gql`
             sdUsageAlarmActivated
             cpuUsageAlarmActivated
             temperatureAlarmActivated
+            online
             locationPath{
               lat
               lng

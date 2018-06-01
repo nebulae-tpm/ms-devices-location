@@ -56,6 +56,29 @@ class HistoricalDeviceLocationDA {
             }
         );
     }
+
+    /**
+     * Cleans historical device location by 
+     * @param {*} id Device ID
+     */
+    static removeHistoricalDeviceLocation$(cleanHistoricalDeviceLocation) {
+        const keepLastNLocations = cleanHistoricalDeviceLocation.data.keepLastNLocations ?
+        cleanHistoricalDeviceLocation.data.keepLastNLocations : 90;
+
+        const collection = mongoDB.db.collection(collectionName);
+
+        return Rx.Observable.defer(() => 
+            collection.aggregate([
+                {$sort: {'timestamp': -1}},   
+                {$group: {_id:'$id', historical:{$push: '$_id'}}},   
+                {$project: {_id:0, deviceId: '$_id', keepHistorical: {$slice: ['$historical', 0, keepLastNLocations]}}}
+            ]).toArray()
+        )
+        .mergeMap(result => Rx.Observable.from(result))
+        .pluck('keepHistorical')
+        .reduce((acc, array) => [...acc, ...array], [])
+        .mergeMap(result => Rx.Observable.defer(() => collection.remove( { '_id' : { $nin: result } } )));
+    }
 }
 
 module.exports = HistoricalDeviceLocationDA;

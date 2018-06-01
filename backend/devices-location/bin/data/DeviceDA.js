@@ -26,7 +26,7 @@ class DeviceDA {
     static getDevices$(filterText, groupName, limit) {
         let filter = {};
         if(filterText){
-            filter['$text'] = { $search: filterText };
+            filter['$or'] = [ { id: filterText }, { hostname: filterText } ];
         }
 
         if(groupName){
@@ -34,6 +34,8 @@ class DeviceDA {
         }
         
         filter['loc'] = { $exists: true };
+
+        console.log('QUERY =>', JSON.stringify(filter));
 
         return Rx.Observable.create(async observer => {
             const collection = mongoDB.db.collection(collectionName);
