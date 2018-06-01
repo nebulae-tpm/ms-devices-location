@@ -86,7 +86,6 @@ class Device {
         const deviceData = { id: data.aid, loc: data.data.loc, timestamp: data.data.timestamp, version: data.etv };
         const historicalDeviceLocation = { id: data.aid, loc: data.data.loc, timestamp: data.data.timestamp, version: data.etv };
 
-        console.log('updateDeviceLocation ', historicalDeviceLocation);
         return HistoricalDeviceLocationDA
             .saveHistoricalDeviceLocation$(historicalDeviceLocation)
             .mergeMap(historicalDeviceLocation => DeviceDA.getDeviceById$(deviceData.id))
@@ -131,7 +130,6 @@ class Device {
      * @param {*} authToken Auth token
      */
     updateDeviceAlarmsState$(evt, authToken) {
-        console.log('Evt updateDeviceData: ', evt);
         let deviceData;
         switch (evt.et) {
             case 'DeviceRamuUsageAlarmActivated':
