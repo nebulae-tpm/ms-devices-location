@@ -69,7 +69,6 @@ export class MapDialogComponent implements OnInit, OnDestroy {
     this.deviceLocationQuerySubscription = this.devicesLocationService
       .getDevicesLocationByFilter(filterText, groupName, undefined)
       .pipe(
-        tap(val => console.log('refreshDeviceLocationQuery ', val)),
         mergeMap(devicesLocation => Observable.from(devicesLocation.data.getDevicesLocation)),
         first(),
         mergeMap((deviceLocation: any) => {

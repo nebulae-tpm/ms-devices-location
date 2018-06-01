@@ -35,8 +35,6 @@ class DeviceDA {
         
         filter['loc'] = { $exists: true };
 
-        console.log('QUERY =>', JSON.stringify(filter));
-
         return Rx.Observable.create(async observer => {
             const collection = mongoDB.db.collection(collectionName);
             const cursor = collection.find(filter);

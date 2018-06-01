@@ -35,8 +35,11 @@ module.exports = {
         return pubsub.asyncIterator('deviceLocationEvent');
       },
         (payload, variables, context, info) => {
-          //return payload.deviceLocationReportedEvent.lastName === variables.lastName;
-          return true;
+          //If no variables were sent in the subscription, that means that all the device location events will be listened.
+          if(!variables.ids || variables.ids.length == 0){
+            return true;
+          }
+          return variables.ids.filter(id => id == payload.deviceLocationEvent.id).length > 0;
         }),
     },
   },
