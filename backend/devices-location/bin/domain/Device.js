@@ -6,38 +6,12 @@ const HistoricalDeviceLocationDA = require('../data/HistoricalDeviceLocationDA')
 const DeviceGroupDA = require('../data/DeviceGroupDA');
 const broker = require('../tools/broker/BrokerFactory')();
 const MATERIALIZED_VIEW_TOPIC = "materialized-view-updates";
-const HISTORICAL_DEVICE_LOCATION_QUANTITY = 100;
+const HISTORICAL_DEVICE_LOCATION_QUANTITY = 90;
 
 let instance;
 
 class Device {
     constructor() {
-    }
-
-    mergeDeviceAndLocationPath() {
-        return Rx.Observable.map(([deviceLocation, historicalDevicesLocation]) => {
-            const deviceLocationEvent = {
-                id: deviceLocation.id,
-                timestamp: deviceLocation.timestamp,
-                currentLocation: deviceLocation.loc ? {
-                    lng: deviceLocation.loc.geojson.coordinates[0],
-                    lat: deviceLocation.loc.geojson.coordinates[1],
-                } : undefined,
-                hostname: deviceLocation.hostname,
-                groupName: deviceLocation.groupName,
-                type: deviceLocation.type,
-                ramUsageAlarmActivated: deviceLocation.ramUsageAlarmActivated,
-                sdUsageAlarmActivated: deviceLocation.sdUsageAlarmActivated,
-                cpuUsageAlarmActivated: deviceLocation.cpuUsageAlarmActivated,
-                temperatureAlarmActivated: deviceLocation.temperatureAlarmActivated,
-                locationPath: {
-                    lng: historicalDeviceLocation.loc.geojson.coordinates[0],
-                    lat: historicalDeviceLocation.loc.geojson.coordinates[1],
-                    timestamp: historicalDeviceLocation.timestamp
-                }
-            }
-            return deviceLocationEvent;
-        });
     }
 
     /**
@@ -201,7 +175,9 @@ class Device {
             hostname: (deviceDeviceState.data.hostname ? deviceDeviceState.data.hostname: undefined), 
             groupName: (deviceDeviceState.data.groupName ? deviceDeviceState.data.groupName: undefined), 
             version: deviceDeviceState.etv };
-
+        //Remove undefined values
+        deviceData = JSON.parse(JSON.stringify(deviceData));
+        
         let obs = Rx.Observable.of(undefined);
         if(deviceDeviceState.data.groupName){
             const deviceGroup = { name: deviceDeviceState.data.groupName};
