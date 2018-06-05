@@ -5,7 +5,8 @@ export const locale = {
           'SEARCH_PLACEHOLDER': 'Lugar de interés',
           'DEVICE_GROUP_PLACEHOLDER': 'Cuencas',
           'DEVICES_PLACEHOLDER': 'Dispositivos',
-          'SELECT_DEVICE_GROUP': 'Seleccione una cuenca'
+          'SELECT_DEVICE_GROUP': 'Seleccione una cuenca',
+          'DEVICE_VIEWER_DIALOG_CLOSE': 'Cerrar'
       },
       MARKER: {
         INFOWINDOW: {

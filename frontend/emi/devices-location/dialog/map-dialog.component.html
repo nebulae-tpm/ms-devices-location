@@ -6,6 +6,6 @@
   <div #vehicleViewer style="width: 399px; height: 305px;padding: 0px; overflow:hidden;">
   </div>      
 </div>
-<div mat-dialog-actions *ngIf="false">
-      <button mat-button (click)="closeDialog()">Close</button>
+<div mat-dialog-actions>
+      <button mat-raised-button color="accent" style="width: 100%" (click)="closeDialog()">{{ 'LOCATION.DEVICE_VIEWER_DIALOG_CLOSE' | translate }}</button>
 </div>

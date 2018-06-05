@@ -165,7 +165,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
             deviceLocation.currentLocation.sdUsageAlarmActivated,
             deviceLocation.currentLocation.cpuUsageAlarmActivated,
             deviceLocation.currentLocation.temperatureAlarmActivated,
-            deviceLocation.currentLocation.online
+            deviceLocation.currentLocation.online, false
           );
         }
       },
@@ -236,7 +236,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
             deviceLocation.currentLocation.sdUsageAlarmActivated,
             deviceLocation.currentLocation.cpuUsageAlarmActivated,
             deviceLocation.currentLocation.temperatureAlarmActivated,
-            deviceLocation.currentLocation.online);
+            deviceLocation.currentLocation.online, false);
         }
         this.updateMarkerClusterer();
       });
@@ -293,7 +293,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     console.log('manageMarkers =====> ', deviceLocation);
     return Observable.from(this.markers)
       .filter(marker => {
-        return marker.vehicle.serial == deviceLocation.id;
+        return marker.vehicle.serial == deviceLocation.id && deviceLocation.currentLocation != null;
       })
       .defaultIfEmpty(
         new MarkerRef(
@@ -415,10 +415,9 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
    * Navigates to the device detail page of the selected vehicle
    */
   goToDeviceDetail() {
-    console.log('goToDeviceDetail');
     if(this.selectedMarker){
       console.log('Navigates ===> ', this.selectedMarker.vehicle.serial);
-      this.router.navigate(['device', this.selectedMarker.vehicle.serial]);
+      this.router.navigate(['/devices/device', this.selectedMarker.vehicle.serial]);
     }
   }
 
@@ -426,7 +425,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     const dialogConfig = new MatDialogConfig();
     dialogConfig.hasBackdrop = false;
     dialogConfig.width = '400px';
-    dialogConfig.height = '350px';
+    dialogConfig.height = '385px';
     dialogConfig.data = { followedMarkerId: this.selectedMarker.vehicle.serial };
     
     let dialogRef = this.dialog.open(MapDialogComponent, dialogConfig);

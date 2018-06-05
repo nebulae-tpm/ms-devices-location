@@ -1,3 +1,4 @@
+import { LocationPath } from './../entities/markerRef';
 import { DevicesLocationService } from './../devices-location.service';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { DatePipe } from '@angular/common';
@@ -48,7 +49,9 @@ export class MapDialogComponent implements OnInit, OnDestroy {
     console.log('ngOnInit');
     this.initMap();
 
-    this.refreshDeviceLocationQuery(this.followedMarkerId, undefined);
+    this.getDeviceLocationQuery(this.followedMarkerId, undefined);
+
+    this.subscribeDeviceLocationWithLocationPathEvent();
   }
 
     /**
@@ -64,11 +67,17 @@ export class MapDialogComponent implements OnInit, OnDestroy {
     this.map = new MapRef(this.gmapElement.nativeElement, mapOptions);
   }
 
-  refreshDeviceLocationQuery(filterText: String, groupName: String, firstTime: Boolean = false) {
+
+  /**
+   * get the device data, its current location and location path according to the filter
+   * @param filterText 
+   */
+  getDeviceLocationQuery(filterText: String, groupName: String, firstTime: Boolean = false) {
     this.bounds = new google.maps.LatLngBounds();
     this.deviceLocationQuerySubscription = this.devicesLocationService
-      .getDevicesLocationByFilter(filterText, groupName, undefined)
+      .getDevicesLocationWithLocationPath(filterText)
       .pipe(
+        tap(val=> console.log("result ==> ", val)),
         mergeMap(devicesLocation => Observable.from(devicesLocation.data.getDevicesLocation)),
         first(),
         mergeMap((deviceLocation: any) => {
@@ -103,6 +112,7 @@ export class MapDialogComponent implements OnInit, OnDestroy {
         }),
         filter(([marker, deviceLocation]) => (marker as MarkerRef).lastTimeLocationReported < deviceLocation.currentLocation.timestamp)
       ).subscribe(([marker, deviceLocation]) => {
+        console.log('getDevicesLocationWithLocationPath');
         if (!marker.getMap()) {
           marker.setMap(this.map);
           const loc = new google.maps.LatLng(marker.getPosition().lat(), marker.getPosition().lng());
@@ -116,9 +126,11 @@ export class MapDialogComponent implements OnInit, OnDestroy {
             deviceLocation.currentLocation.sdUsageAlarmActivated,
             deviceLocation.currentLocation.cpuUsageAlarmActivated,
             deviceLocation.currentLocation.temperatureAlarmActivated,
-            deviceLocation.currentLocation.online
-          );
+            deviceLocation.currentLocation.online, true
+          );          
         }
+        console.log('Location =========> ', deviceLocation.locationPath);
+        marker.updateRoutePath(this.map, deviceLocation.locationPath);
       },
         error => console.error(error),
         () => {
@@ -128,12 +140,59 @@ export class MapDialogComponent implements OnInit, OnDestroy {
         });
   }
 
+  /**
+   * Subscribes to graphQL to listen the device changes
+   */
+  subscribeDeviceLocationWithLocationPathEvent(){
+    const ids = [this.followedMarkerId];
+
+    this.deviceLocationSubscriptionSubscription = this.devicesLocationService
+      .subscribeDeviceLocationWithLocationPath(ids)
+      .pipe(
+        tap(deviceLocation => console.log('Subscribe deviceLocation => ', deviceLocation)),
+        mergeMap((deviceLocation: any) => {
+          return Observable.of(this.marker)
+          .mergeMap(marker => this.updateMarkerInfoContent(marker))
+          .mergeMap(marker => {
+            return Rx.Observable.forkJoin(
+              Rx.Observable.of(marker),
+              Rx.Observable.of(deviceLocation.data.deviceLocationEvent)
+            );
+          });
+        }),
+        filter(([marker, deviceLocation]) => {
+          console.log('FILTER ', marker);
+          console.log('DEVICE_LOCATION1 ', deviceLocation);
+          console.log('DEVICE_LOCATION2 ', deviceLocation.currentLocation);
+          return (marker as MarkerRef).lastTimeLocationReported < deviceLocation.currentLocation.timestamp;
+        })
+      ).subscribe(([marker, deviceLocation]) => {
+        console.log('subscribeDeviceLocationWithLocationPathEvent');        
+        if (!marker.getMap()) {
+          marker.setMap(this.map);
+          this.addMarkerToMap(marker);
+        } else {
+            marker.putMap(this.map);
+            marker.updateData(deviceLocation.currentLocation.lng,
+            deviceLocation.currentLocation.lat, 1000,
+            deviceLocation.currentLocation.timestamp,
+            deviceLocation.currentLocation.ramUsageAlarmActivated,
+            deviceLocation.currentLocation.sdUsageAlarmActivated,
+            deviceLocation.currentLocation.cpuUsageAlarmActivated,
+            deviceLocation.currentLocation.temperatureAlarmActivated,
+            deviceLocation.currentLocation.online, true);
+            marker.updateRoutePath(this.map, deviceLocation.locationPath);
+        }
+        //this.map.setCenter(new google.maps.LatLng(deviceLocation.currentLocation.lat, deviceLocation.currentLocation.lng));
+        
+      });
+  }
+
     /**
    * Updates the information shown on the InfoWindows of the marker passed as a parameter
    * @param marker marker to be updated
    */
   updateMarkerInfoContent(marker: MarkerRef) {
-    console.log('updateMarkerInfoContent ==> ', marker);
     return Rx.Observable.forkJoin(
       Rx.Observable.of(marker),
       this.translate.get('MARKER.INFOWINDOW.TITLE'),
@@ -143,6 +202,7 @@ export class MapDialogComponent implements OnInit, OnDestroy {
       this.translate.get('MARKER.INFOWINDOW.LAST_LOCATION_TIMESTAMP')
     )
       .map(([marker, title, plate, vehicle, groupName, lastLocationTimestamp]) => {
+        console.log('updateMarkerInfoContent ', marker);
         let infoWindowContent = MarkerRefInfoWindowContent;
 
         const serialStr = (marker.vehicle.serial ? marker.vehicle.serial + '' : '');

@@ -8,13 +8,13 @@ type DeviceLocationEvent {
   hostname: String
   "Group name which the device belongs"
   groupName: String
-  "Boolean that indicates if a device is alarmed by RAM."
+  "Boolean that indicates if a device is alarmed by RAM"
   ramUsageAlarmActivated: Boolean
-  "Boolean that indicates if a device is alarmed by SD."
+  "Boolean that indicates if a device is alarmed by SD"
   sdUsageAlarmActivated: Boolean
-  "Boolean that indicates if a device is alarmed by CPU."
+  "Boolean that indicates if a device is alarmed by CPU"
   cpuUsageAlarmActivated: Boolean
-  "Boolean that indicates if a device is alarmed by temperature."
+  "Boolean that indicates if a device is alarmed by temperature"
   temperatureAlarmActivated: Boolean
   "Device status"
   online: Boolean
@@ -49,5 +49,5 @@ type Query {
 
 type Subscription {
   "Event fired when a device is modified or when a device reports information about its location. If no ids are sent, all the events will be listened."
-  deviceLocationEvent(ids: [Int]): DeviceLocationEvent
+  deviceLocationEvent(ids: [String]): DeviceLocationEvent
 }

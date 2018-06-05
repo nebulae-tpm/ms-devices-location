@@ -1,6 +1,7 @@
 // tslint:disable-next-line:import-blacklist
 import * as Rx from 'rxjs/Rx';
 import { } from 'googlemaps';
+import { MapRef } from "./agmMapRef";
 
 export class Vehicle {
   plate: '';
@@ -12,6 +13,13 @@ export class Vehicle {
   sdUsageAlarmActivated: false;
   temperatureAlarmActivated: false;
   online: false;
+}
+
+
+export class LocationPath {
+  lat: number;
+  lng: number;
+  timestamp: number;
 }
 
 export class MarkerRef extends google.maps.Marker {
@@ -67,9 +75,15 @@ export class MarkerRef extends google.maps.Marker {
 
   deltaLng = 0;
 
+  lastLat = 0;
+
+  lastLng = 0;
+
   numDeltas = 80;
 
   delay = 10;
+
+  allMap: MapRef;
 
 
   constructor(vehicle: Vehicle, opts?: google.maps.MarkerOptions) {
@@ -97,14 +111,14 @@ export class MarkerRef extends google.maps.Marker {
     console.log('****** UPDATE ICON ****** ', JSON.stringify(this.vehicle));
 
     let iconUrl = "./assets/devices-location/busOnline.svg";
-    if((this.vehicle.ramUsageAlarmActivated
+    if ((this.vehicle.ramUsageAlarmActivated
       || this.vehicle.sdUsageAlarmActivated
       || this.vehicle.cpuUsageAlarmActivated
-      || this.vehicle.temperatureAlarmActivated) && this.vehicle.online){
+      || this.vehicle.temperatureAlarmActivated) && this.vehicle.online) {
       iconUrl = "./assets/devices-location/busAlarmed.svg";
-    } else if(this.vehicle.online){
+    } else if (this.vehicle.online) {
       iconUrl = "./assets/devices-location/busOnline.svg";
-    }else{
+    } else {
       iconUrl = "./assets/devices-location/busOffline.svg";
     }
 
@@ -116,16 +130,6 @@ export class MarkerRef extends google.maps.Marker {
       scaledSize: new google.maps.Size(30, 30)
     };
     this.setIcon(icon);
-  }
-
-  updateRoutePath(routePathCoordinates) {
-    this.routePath = new google.maps.Polyline({
-      path: routePathCoordinates,
-      geodesic: true,
-      strokeColor: '#FF0000',
-      strokeOpacity: 1.0,
-      strokeWeight: 2
-    });
   }
 
   // updateLocation1(lng: number, lat: number, delay: number, lastTimeLocationReported: number): void {
@@ -173,41 +177,91 @@ export class MarkerRef extends google.maps.Marker {
    * @param vehicle
    */
   updateData(lng: number, lat: number, delay: number, lastTimeLocationReported: number, ramUsageAlarmActivated: Boolean,
-    sdUsageAlarmActivated: Boolean, cpuUsageAlarmActivated: Boolean, temperatureAlarmActivated: Boolean, online: Boolean) {
+    sdUsageAlarmActivated: Boolean, cpuUsageAlarmActivated: Boolean, temperatureAlarmActivated: Boolean, online: Boolean, center = false) {
     console.log('Update location -> ' + lng + " -- " + lat + " - Timestamp: " + lastTimeLocationReported);
     this.setVisibility(100);
     this.lastTimeLocationReported = lastTimeLocationReported;
     this.index = 0;
+
     this.deltaLat = (lat - this.getPosition().lat()) / this.numDeltas;
     this.deltaLng = (lng - this.getPosition().lng()) / this.numDeltas;
+    this.lastLat = lat;
+    this.lastLng = lng;
 
+    this.vehicle.ramUsageAlarmActivated = ramUsageAlarmActivated;
 
-      this.vehicle.ramUsageAlarmActivated = ramUsageAlarmActivated;
+    this.vehicle.sdUsageAlarmActivated = sdUsageAlarmActivated;
 
-      this.vehicle.sdUsageAlarmActivated = sdUsageAlarmActivated;
+    this.vehicle.cpuUsageAlarmActivated = cpuUsageAlarmActivated;
 
-      this.vehicle.cpuUsageAlarmActivated = cpuUsageAlarmActivated;
+    this.vehicle.temperatureAlarmActivated = temperatureAlarmActivated;
 
-      this.vehicle.temperatureAlarmActivated = temperatureAlarmActivated;
-
-      this.vehicle.online = online;
+    this.vehicle.online = online;
 
     this.updateIcon();
-    this.moveMarker();
+    this.moveMarker(center);
   }
 
-  moveMarker() {
-    // console.log('Moving marker');
+  putMap(map: MapRef){
+    this.allMap = map;
+  }
+
+  /**
+   * Updates the location path of the marker (polyline)
+   * @param locationPath
+   */
+  updateRoutePath(map, locationPath?: [LocationPath]) {
+    console.log('updateRoutePath ', locationPath);
+    if (!locationPath) {
+      return;
+    }
+    let routePathCoordinates = [];
+
+    for (let i = 0; i < locationPath.length; i++) {
+      routePathCoordinates.push({ lat: locationPath[i].lat, lng: locationPath[i].lng });
+    }
+
+    if (this.routePath) {
+      this.routePath.setMap(null);
+    }
+
+    this.routePath = new google.maps.Polyline({
+      path: routePathCoordinates,
+      geodesic: true,
+      strokeColor: '#FF0000',
+      strokeOpacity: 1.0,
+      strokeWeight: 2
+    });
+
+    this.routePath.setMap(map);
+  }
+
+  moveMarker(center = false) {
     const lat = this.getPosition().lat() + this.deltaLat;
     const lng = this.getPosition().lng() + this.deltaLng;
     this.setPosition(
       new google.maps.LatLng(lat, lng)
     );
 
+    if(this.allMap){
+      this.allMap.setCenter(this.getPosition());
+    }
+    
+    console.log('Moving marker ==> ', lat, lng);
+
     if (this.index != this.numDeltas) {
       this.index++;
       setTimeout(this.moveMarker.bind(this), this.delay);
-    }
+    } else {
+      const lat = this.lastLat;
+      const lng = this.lastLng;
+      this.setPosition(
+        new google.maps.LatLng(lat, lng)
+      );
+      if(this.allMap){
+        this.allMap.setCenter(this.getPosition());
+      }
+    }    
   }
 
   setVisibility(visibility: number): void {
