@@ -41,7 +41,7 @@ class DeviceGroupDA {
 
     /**
      * Updates the device group passed by parameter
-     * @param {*} deviceGroup 
+     * @param {*} deviceGroup name of the device group
      */
     static updateDeviceGroup$(deviceGroup) {
         const collection = mongoDB.db.collection(collectionName);
