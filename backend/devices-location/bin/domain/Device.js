@@ -170,7 +170,7 @@ class Device {
      * @param {*} authToken Auth token
      */
     updateDeviceData$(deviceDeviceState, authToken) {
-        const deviceData = {
+        let deviceData = {
             id: deviceDeviceState.aid, 
             hostname: (deviceDeviceState.data.hostname ? deviceDeviceState.data.hostname: undefined), 
             groupName: (deviceDeviceState.data.groupName ? deviceDeviceState.data.groupName: undefined), 
