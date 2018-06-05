@@ -192,7 +192,7 @@ class Device {
     }
 
     /**
-     * Updates the device data . If the device does not exist, a new device location is created without location.
+     * Updates the device data, If the device does not exist, a new device location is created without location.
      * @param {*} data Device data (type, serial, hostname)
      * @param {*} authToken Auth token
      */
