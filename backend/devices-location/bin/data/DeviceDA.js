@@ -20,7 +20,7 @@ class DeviceDA {
     }
 
     /**
-     * gets DeviceLocation
+     * gets DeviceLocation according to the filter
      * @param {string} type 
      */
     static getDevices$(filterText, groupName, limit) {

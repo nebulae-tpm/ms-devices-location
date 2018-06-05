@@ -94,7 +94,7 @@ export class MarkerRef extends google.maps.Marker {
     //   scaledSize: new google.maps.Size(30, 30)
     // };
     this.setClickable(true);
-    this.setLabel('');
+    this.setLabel(' ');
     this.setTitle('D-HUB');
     //this.setDraggable(false);
     //this.setIcon('./assets/devices-location/tpm_bus_30_30.png');
