@@ -150,14 +150,14 @@ class Device {
                 break;
             case 'DeviceConnected':
                 deviceData = {
-                    online: true
+                    online: evt.data.connected
                 }
                 break;
-            case 'DeviceDisconnected':
-                deviceData = {
-                    online: false
-                }
-                break;
+            // case 'DeviceDisconnected':
+            //     deviceData = {
+            //         online: false
+            //     }
+            //     break;
             default:
                 return Rx.Observable.empty();
         }
