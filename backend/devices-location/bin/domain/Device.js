@@ -104,6 +104,8 @@ class Device {
      * @param {*} authToken Auth token
      */
     updateDeviceAlarmsState$(evt, authToken) {
+        console.log('updateDeviceAlarmsState', JSON.stringify(deviceData));
+
         let deviceData;
         switch (evt.et) {
             case 'DeviceRamuUsageAlarmActivated':
