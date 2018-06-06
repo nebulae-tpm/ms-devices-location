@@ -26,7 +26,7 @@ class DeviceDA {
     static getDevices$(filterText, groupName, limit) {
         let filter = {};
         if(filterText){
-            filter['$or'] = [ { id: filterText }, { hostname: filterText } ];
+            filter['$or'] = [ { id: {$regex: filterText, $options: 'i'} }, { hostname: {$regex: filterText, $options: 'i'} } ];
         }
 
         if(groupName){
@@ -61,7 +61,9 @@ class DeviceDA {
      */
     static getDeviceById$(deviceId) {
         const collection = mongoDB.db.collection(collectionName);
-        return Rx.Observable.fromPromise(collection.findOne({ id: deviceId }));
+
+        //return Rx.Observable.fromPromise(collection.findOne({ id: deviceId }));
+        return Rx.Observable.defer(() => collection.findOne({ id: deviceId }));
     }
 
     /**

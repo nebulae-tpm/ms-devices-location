@@ -32,6 +32,7 @@ import { toArray, tap, mergeMap, filter, map } from 'rxjs/operators';
 import { startWith } from 'rxjs/operators/startWith';
 import { distinctUntilChanged } from 'rxjs/operators/distinctUntilChanged';
 import { MatDialog, MatDialogConfig, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { debounceTime } from 'rxjs/operators/debounceTime';
 
 @Component({
   selector: "devices-location",
@@ -68,10 +69,16 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     private translate: TranslateService, private devicesLocationService: DevicesLocationService, private datePipe: DatePipe,
     private activatedRouter: ActivatedRoute, private zone: NgZone) {
 
-      window['angularComponentReference'] = {
+    window['angularComponentReference'] = {
         zone: this.zone,
         componentFn: (value) => this.goToDeviceDetail(),
         component: this,
+    };
+
+    window['DeviceViewerReference'] = {
+      zone: this.zone,
+      componentFn: () => this.openDeviceViewerDialog(),
+      component: this,
     };
 
     this.deviceFilterCtrl = new FormControl();
@@ -85,7 +92,9 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     this.deviceLocationQueryFiltered$ =
       this.deviceFilterCtrl.valueChanges.pipe(
         startWith(undefined),
-        mergeMap((filterText) => {
+        debounceTime(500),
+        distinctUntilChanged(),
+        mergeMap((filterText:String) => {
           console.log('this.selectedDeviceGroup ******* ', filterText, this.selectedDeviceGroup);
           return this.getAllDevicesFiltered(filterText, this.selectedDeviceGroup, 10);
         })
@@ -145,15 +154,15 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     this.deviceLocationQuerySubscription = this.devicesLocationService
       .getDevicesLocationByFilter(filterText, groupName, undefined)
       .pipe(
-        tap(val => console.log('refreshDeviceLocationQuery ', val)),
         mergeMap(devicesLocation => Observable.from(devicesLocation.data.getDevicesLocation)),
         mergeMap((deviceLocation: any) => {
           return this.manageMarkers(deviceLocation);
         }),
-        filter(([marker, deviceLocation]) => (marker as MarkerRef).lastTimeLocationReported < deviceLocation.currentLocation.timestamp)
+        //filter(([marker, deviceLocation]) => (marker as MarkerRef).lastTimeLocationReported < deviceLocation.currentLocation.timestamp)
       ).subscribe(([marker, deviceLocation]) => {
         if (!marker.getMap()) {
           marker.setMap(this.map);
+          marker.lastTimeLocationReported = deviceLocation.currentLocation.timestamp;
           const loc = new google.maps.LatLng(marker.getPosition().lat(), marker.getPosition().lng());
           this.bounds.extend(loc);
           this.addMarkerToMap(marker);
@@ -161,13 +170,21 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
           marker.updateData(deviceLocation.currentLocation.lng,
             deviceLocation.currentLocation.lat, 1000,
             deviceLocation.currentLocation.timestamp,
-            deviceLocation.currentLocation.ramUsageAlarmActivated,
-            deviceLocation.currentLocation.sdUsageAlarmActivated,
-            deviceLocation.currentLocation.cpuUsageAlarmActivated,
-            deviceLocation.currentLocation.temperatureAlarmActivated,
-            deviceLocation.currentLocation.online, false
+            deviceLocation.ramUsageAlarmActivated,
+            deviceLocation.sdUsageAlarmActivated,
+            deviceLocation.cpuUsageAlarmActivated,
+            deviceLocation.temperatureAlarmActivated,
+            deviceLocation.online, false
           );
         }
+        
+        this.updateMarkerInfoContent(marker, deviceLocation).subscribe(val => {
+          console.log('updateMarkerInfoContent => ', val);
+        }, error => {
+          console.log('Error updateMarkerInfoContent => ', error);
+        }, function() {
+          console.log('Complete updateMarkerInfoContent');
+        });
       },
         error => console.error(error),
         () => {
@@ -204,7 +221,6 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     this.activatedRouter.params
     .subscribe(params => {
       this.selectedDeviceSerial = params['id'];
-      console.log('getParam ===> ', this.selectedDeviceSerial);
     });
   }
 
@@ -214,16 +230,15 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
 
     this.initObservables();
     this.initMap();
+
     this.refreshDeviceLocationQuery(undefined, undefined, true);
 
     this.deviceLocationSubscriptionSubscription = this.devicesLocationService
       .subscribeDeviceLocation()
       .pipe(
         mergeMap(deviceLocation => {
-          console.log('EVENT deviceLocationSubscriptionSubscription ', JSON.stringify(deviceLocation));
           return this.manageMarkers(deviceLocation.data.deviceLocationEvent);
         }),
-        filter(([marker, deviceLocation]) => (marker as MarkerRef).lastTimeLocationReported < deviceLocation.currentLocation.timestamp)
       ).subscribe(([marker, deviceLocation]) => {
         if (!marker.getMap()) {
           marker.setMap(this.map);
@@ -232,13 +247,15 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
           marker.updateData(deviceLocation.currentLocation.lng,
             deviceLocation.currentLocation.lat, 1000,
             deviceLocation.currentLocation.timestamp,
-            deviceLocation.currentLocation.ramUsageAlarmActivated,
-            deviceLocation.currentLocation.sdUsageAlarmActivated,
-            deviceLocation.currentLocation.cpuUsageAlarmActivated,
-            deviceLocation.currentLocation.temperatureAlarmActivated,
-            deviceLocation.currentLocation.online, false);
+            deviceLocation.ramUsageAlarmActivated,
+            deviceLocation.sdUsageAlarmActivated,
+            deviceLocation.cpuUsageAlarmActivated,
+            deviceLocation.temperatureAlarmActivated,
+            deviceLocation.online, false);
         }
         this.updateMarkerClusterer();
+        this.updateMarkerInfoContent(marker, deviceLocation).subscribe(val => {
+        });
       });
 
     this.subscribers.push(this.deviceLocationQuerySubscription);
@@ -260,7 +277,10 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
           .replace('{TITLE}', translations.TITLE)
           .replace('{VEHICLE}', translations.VEHICLE)
           .replace('{GROUPNAME}', translations.GROUPNAME)
-          .replace('{LAST_LOCATION_TIMESTAMP}', translations.LAST_LOCATION_TIMESTAMP);
+          .replace('{LAST_LOCATION_TIMESTAMP}', translations.LAST_LOCATION_TIMESTAMP)
+          .replace('{SEE_MORE}', translations.SEE_MORE)
+          .replace('{FOLLOW}', translations.FOLLOW);           
+
         content = content.toString().replace('$plate', plateStr);
         content = content.replace('$serial', serialStr);
         m.infoWindow.setContent(content);
@@ -290,7 +310,6 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
   }
 
   manageMarkers(deviceLocation): Observable<[MarkerRef, any]> {
-    console.log('manageMarkers =====> ', deviceLocation);
     return Observable.from(this.markers)
       .filter(marker => {
         return marker.vehicle.serial == deviceLocation.id && deviceLocation.currentLocation != null;
@@ -316,7 +335,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
           })
       )
       .first()
-      .mergeMap(marker => this.updateMarkerInfoContent(marker))
+      //.mergeMap(marker => this.updateMarkerInfoContent(marker, deviceLocation))
       .mergeMap(marker => {
         return Rx.Observable.forkJoin(
           Rx.Observable.of(marker),
@@ -329,22 +348,32 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
    * Updates the information shown on the InfoWindows of the marker passed as a parameter
    * @param marker marker to be updated
    */
-  updateMarkerInfoContent(marker: MarkerRef) {
+  updateMarkerInfoContent(marker: MarkerRef, deviceLocation) {
     return Rx.Observable.forkJoin(
       Rx.Observable.of(marker),
       this.translate.get('MARKER.INFOWINDOW.TITLE'),
       this.translate.get('MARKER.INFOWINDOW.PLATE'),
       this.translate.get('MARKER.INFOWINDOW.VEHICLE'),
       this.translate.get('MARKER.INFOWINDOW.GROUPNAME'),
-      this.translate.get('MARKER.INFOWINDOW.LAST_LOCATION_TIMESTAMP')
+      this.translate.get('MARKER.INFOWINDOW.LAST_LOCATION_TIMESTAMP'),
+      this.translate.get('MARKER.INFOWINDOW.SEE_MORE'),
+      this.translate.get('MARKER.INFOWINDOW.FOLLOW')
     )
-      .map(([marker, title, plate, vehicle, groupName, lastLocationTimestamp]) => {
+      .map(([marker, title, plate, vehicle, groupName, lastLocationTimestamp, seeMore, follow]) => {
         let infoWindowContent = MarkerRefInfoWindowContent;
+        if(deviceLocation){
+          marker.vehicle.serial = (deviceLocation.id ? deviceLocation.id + '' : '');
+          marker.vehicle.groupName = (deviceLocation.groupName ? deviceLocation.groupName + '' : '');
+          marker.vehicle.cpuUsageAlarmActivated =(deviceLocation.cpuUsageAlarmActivated ? deviceLocation.cpuUsageAlarmActivated: false);
+          marker.vehicle.ramUsageAlarmActivated =(deviceLocation.ramUsageAlarmActivated ? deviceLocation.ramUsageAlarmActivated: false);
+          marker.vehicle.sdUsageAlarmActivated =(deviceLocation.sdUsageAlarmActivated ? deviceLocation.sdUsageAlarmActivated: false);
+          marker.vehicle.temperatureAlarmActivated = (deviceLocation.temperatureAlarmActivated ? deviceLocation.temperatureAlarmActivated: false);
+        }
 
         const serialStr = (marker.vehicle.serial ? marker.vehicle.serial + '' : '');
         const groupNameStr = (marker.vehicle.groupName ? marker.vehicle.groupName : '');
-        const lastLocationTimestampStr = (marker.vehicle.lastLocationTimestamp ?
-          this.datePipe.transform(new Date(marker.vehicle.lastLocationTimestamp), 'yyyy-MM-dd HH:mm') : '');
+        const lastLocationTimestampStr = (marker.lastTimeLocationReported ?
+          this.datePipe.transform(new Date(marker.lastTimeLocationReported), 'yyyy-MM-dd HH:mm') : '');
         const plateStr = (marker.vehicle.plate ? marker.vehicle.plate : '');
 
         infoWindowContent = infoWindowContent.toString().replace('{TITLE}', title);
@@ -352,6 +381,8 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
         infoWindowContent = infoWindowContent.toString().replace('{VEHICLE}', vehicle);
         infoWindowContent = infoWindowContent.toString().replace('{GROUPNAME}', groupName);
         infoWindowContent = infoWindowContent.toString().replace('{LAST_LOCATION_TIMESTAMP}', lastLocationTimestamp);
+        infoWindowContent = infoWindowContent.toString().replace('{SEE_MORE}', seeMore);
+        infoWindowContent = infoWindowContent.toString().replace('{FOLLOW}', follow);
         infoWindowContent = infoWindowContent.toString().replace('$plate', plateStr);
         infoWindowContent = infoWindowContent.toString().replace('$serial', serialStr);
         infoWindowContent = infoWindowContent.toString().replace('$groupName', groupNameStr);
@@ -396,7 +427,6 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
    * @param event Event
    */
   onMarkerClick(marker: MarkerRef, event) {
-    console.log("onMarkerClick ===> ", marker);
     this.selectedMarker = marker;
     this.markers.forEach(m => {
       m.infoWindow.close();
@@ -416,12 +446,11 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
    */
   goToDeviceDetail() {
     if(this.selectedMarker){
-      console.log('Navigates ===> ', this.selectedMarker.vehicle.serial);
       this.router.navigate(['/devices/device', this.selectedMarker.vehicle.serial]);
     }
   }
 
-  openDialog(): void {
+  openDeviceViewerDialog(): void {
     const dialogConfig = new MatDialogConfig();
     dialogConfig.hasBackdrop = false;
     dialogConfig.width = '400px';
@@ -429,11 +458,6 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     dialogConfig.data = { followedMarkerId: this.selectedMarker.vehicle.serial };
     
     let dialogRef = this.dialog.open(MapDialogComponent, dialogConfig);
-
-    dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed');
-      //this.animal = result;
-    });
   }
 
   /**

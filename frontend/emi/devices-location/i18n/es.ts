@@ -6,7 +6,7 @@ export const locale = {
           'DEVICE_GROUP_PLACEHOLDER': 'Cuencas',
           'DEVICES_PLACEHOLDER': 'Dispositivos',
           'SELECT_DEVICE_GROUP': 'Seleccione una cuenca',
-          'DEVICE_VIEWER_DIALOG_CLOSE': 'Cerrar'
+          'DEVICE_VIEWER_DIALOG_CLOSE': 'Cerrar',
       },
       MARKER: {
         INFOWINDOW: {
@@ -14,7 +14,9 @@ export const locale = {
           PLATE: 'Placa',
           VEHICLE: 'N° serial',
           GROUPNAME: 'Cuenca',
-          LAST_LOCATION_TIMESTAMP: 'Última posición'
+          LAST_LOCATION_TIMESTAMP: 'Última posición',
+          SEE_MORE: 'Ver más...',
+          FOLLOW: 'Seguir'
         }
       }
   }

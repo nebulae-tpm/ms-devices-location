@@ -83,6 +83,8 @@ export class MarkerRef extends google.maps.Marker {
 
   delay = 10;
 
+  lastLocationPath: [LocationPath];
+
   allMap: MapRef;
 
 
@@ -108,8 +110,6 @@ export class MarkerRef extends google.maps.Marker {
    * Updates the marker icon according to the vehicle states (Online, Alarmed, Offline)
    */
   updateIcon() {
-    console.log('****** UPDATE ICON ****** ', JSON.stringify(this.vehicle));
-
     let iconUrl = "./assets/devices-location/busOnline.svg";
     if ((this.vehicle.ramUsageAlarmActivated
       || this.vehicle.sdUsageAlarmActivated
@@ -122,8 +122,6 @@ export class MarkerRef extends google.maps.Marker {
       iconUrl = "./assets/devices-location/busOffline.svg";
     }
 
-    //iconUrl = "./assets/devices-location/location-icon.svg";
-
     const icon = {
       url: iconUrl,
       anchor: new google.maps.Point(30, 30),
@@ -131,42 +129,6 @@ export class MarkerRef extends google.maps.Marker {
     };
     this.setIcon(icon);
   }
-
-  // updateLocation1(lng: number, lat: number, delay: number, lastTimeLocationReported: number): void {
-  //   console.log('Update location -> '+ lng + " -- "+ lat + " - Timestamp: " + lastTimeLocationReported);
-  //   // X refer to logitude
-  //   // Y refer to latitude
-  //   this.setVisibility(100);
-  //   this.lastTimeLocationReported = lastTimeLocationReported;
-  //   const currentLng = this.getPosition().lng();
-  //   const currentLat = this.getPosition().lat();
-  //   const updateDelay = 5;
-  //   const vx = (lng - currentLng) / delay;
-  //   const vy = (lat - currentLat) / delay;
-  //   const timer = Rx.Observable.interval(updateDelay);
-  //   const maximunSteps = delay / updateDelay;
-  //   let steps = 0;
-  //   const subcription = timer.subscribe(() => {
-  //     this.setPosition(
-  //       new google.maps.LatLng(
-  //         this.getPosition().lat() + vy * updateDelay,
-  //         this.getPosition().lng() + vx * updateDelay
-  //       )
-  //     );
-  //     steps++;
-  //     const distance = this.distanceBetweenTwoPoints(
-  //       this.getPosition().lng(), lng,
-  //       this.getPosition().lat(), lat
-  //     );
-  //     if (steps >= maximunSteps || distance < 0.00001) {
-  //       subcription.unsubscribe();
-  //     }
-  //   });
-  // }
-
-  // distanceBetweenTwoPoints(x1, y1, x2, y2) {
-  //   return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-  // }
 
   /**
    *
@@ -176,11 +138,9 @@ export class MarkerRef extends google.maps.Marker {
    * @param lastTimeLocationReported
    * @param vehicle
    */
-  updateData(lng: number, lat: number, delay: number, lastTimeLocationReported: number, ramUsageAlarmActivated: Boolean,
+  updateData(lng: number, lat: number, delay: number, timeLocationReported: number, ramUsageAlarmActivated: Boolean,
     sdUsageAlarmActivated: Boolean, cpuUsageAlarmActivated: Boolean, temperatureAlarmActivated: Boolean, online: Boolean, center = false) {
-    console.log('Update location -> ' + lng + " -- " + lat + " - Timestamp: " + lastTimeLocationReported);
     this.setVisibility(100);
-    this.lastTimeLocationReported = lastTimeLocationReported;
     this.index = 0;
 
     this.deltaLat = (lat - this.getPosition().lat()) / this.numDeltas;
@@ -199,7 +159,12 @@ export class MarkerRef extends google.maps.Marker {
     this.vehicle.online = online;
 
     this.updateIcon();
-    this.moveMarker(center);
+
+    //The marker only can be moved if the time of the new location is greater than the time of the last location reported
+    if(this.lastTimeLocationReported < timeLocationReported){
+      this.lastTimeLocationReported = timeLocationReported;
+      this.moveMarker(center);
+    }
   }
 
   putMap(map: MapRef){
@@ -211,18 +176,28 @@ export class MarkerRef extends google.maps.Marker {
    * @param locationPath
    */
   updateRoutePath(map, locationPath?: [LocationPath]) {
-    console.log('updateRoutePath ', locationPath);
-    if (!locationPath) {
+    //console.log('updateRoutePath ', locationPath);
+    //
+    if (!locationPath && locationPath.length < 1) {
       return;
     }
+
+    if (this.routePath) {      
+      if(this.lastLocationPath && this.lastLocationPath.length > 0){
+        if(this.lastLocationPath[0].timestamp > locationPath[0].timestamp){
+          //It means that the location path received is older, therefore, we cannot take this new location path.
+          return;
+        }
+      }
+      
+      this.lastLocationPath = locationPath;
+      this.routePath.setMap(null);
+    }
+
     let routePathCoordinates = [];
 
     for (let i = 0; i < locationPath.length; i++) {
       routePathCoordinates.push({ lat: locationPath[i].lat, lng: locationPath[i].lng });
-    }
-
-    if (this.routePath) {
-      this.routePath.setMap(null);
     }
 
     this.routePath = new google.maps.Polyline({
@@ -246,8 +221,6 @@ export class MarkerRef extends google.maps.Marker {
     if(this.allMap){
       this.allMap.setCenter(this.getPosition());
     }
-    
-    console.log('Moving marker ==> ', lat, lng);
 
     if (this.index != this.numDeltas) {
       this.index++;
@@ -261,7 +234,7 @@ export class MarkerRef extends google.maps.Marker {
       if(this.allMap){
         this.allMap.setCenter(this.getPosition());
       }
-    }    
+    }
   }
 
   setVisibility(visibility: number): void {
@@ -280,15 +253,18 @@ export class MarkerRef extends google.maps.Marker {
   }
 }
 
-export const MarkerRefInfoWindowContent = '<div> <h2>{TITLE}</h2>' +
+export const MarkerRefInfoWindowContent = '<html><style>input:hover {color: blue;}</style><body>   <div>' +
+  '<p align="right"><input type="button" name="Edit" value="{FOLLOW}" onclick="window.DeviceViewerReference.zone.run(() => {window.DeviceViewerReference.componentFn();});"></p>' +
   '<p> <strong>{PLATE}: </strong>$plate</p>' +
   '<p> <strong>{VEHICLE}: </strong>$serial</p>' +
   '<p> <strong>{GROUPNAME}: </strong>$groupName</p>' +
   '<p align="right"> $lastLocationTimestamp </p>' +
   '<p align="right"> <strong> {LAST_LOCATION_TIMESTAMP} </strong> </p>' +
-  '<input type="button" name="Edit" value="Ver más ..." onclick="window.angularComponentReference.zone.run(() => {window.angularComponentReference.componentFn(\'test\');});">' +
+//  '<input type="button" name="Edit" value="{SEE_MORE}" onclick="window.angularComponentReference.zone.run(() => {window.angularComponentReference.componentFn(\'test\');});">' +
+  '<div style="display:inline-block"><p align="right"> <input type="button" name="Edit" value="{SEE_MORE}" onclick="window.angularComponentReference.zone.run(() => {window.angularComponentReference.componentFn(\'test\');});">' +  
+  //'<a href="#" type="button" onclick="window.angularComponentReference.zone.run(() => {window.angularComponentReference.componentFn(\'test\');});">{TITLE}</a>' +
   //'">'+
-  '</div>';
+  '</div></body></html>';
 
 export const MarkerRefTitleContent =
   '{PLATE}: $plate, ' +

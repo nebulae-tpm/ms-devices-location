@@ -247,11 +247,11 @@ class Device {
 
     /**
      * Cleans historial of device location
-     * @param {*} cleanHistoricalDeviceLocation 
+     * @param {*} cleanDeviceLocationHistory 
      * @param {*} authToken 
      */
-    cleanHistoricalDeviceLocation$(cleanHistoricalDeviceLocation, authToken){
-        return HistoricalDeviceLocationDA.removeHistoricalDeviceLocation$(cleanHistoricalDeviceLocation);
+    cleanDeviceLocationHistory$(cleanDeviceLocationHistory, authToken){
+        return HistoricalDeviceLocationDA.removeHistoricalDeviceLocation$(cleanDeviceLocationHistory);
     }
 
 }

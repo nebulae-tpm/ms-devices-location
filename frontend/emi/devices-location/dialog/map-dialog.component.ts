@@ -52,6 +52,9 @@ export class MapDialogComponent implements OnInit, OnDestroy {
     this.getDeviceLocationQuery(this.followedMarkerId, undefined);
 
     this.subscribeDeviceLocationWithLocationPathEvent();
+
+    this.subscribers.push(this.deviceLocationQuerySubscription);
+    this.subscribers.push(this.deviceLocationSubscriptionSubscription);
   }
 
     /**
@@ -122,11 +125,11 @@ export class MapDialogComponent implements OnInit, OnDestroy {
           marker.updateData(deviceLocation.currentLocation.lng,
             deviceLocation.currentLocation.lat, 1000,
             deviceLocation.currentLocation.timestamp,
-            deviceLocation.currentLocation.ramUsageAlarmActivated,
-            deviceLocation.currentLocation.sdUsageAlarmActivated,
-            deviceLocation.currentLocation.cpuUsageAlarmActivated,
-            deviceLocation.currentLocation.temperatureAlarmActivated,
-            deviceLocation.currentLocation.online, true
+            deviceLocation.ramUsageAlarmActivated,
+            deviceLocation.sdUsageAlarmActivated,
+            deviceLocation.cpuUsageAlarmActivated,
+            deviceLocation.temperatureAlarmActivated,
+            deviceLocation.online, true
           );          
         }
         console.log('Location =========> ', deviceLocation.locationPath);
@@ -160,12 +163,6 @@ export class MapDialogComponent implements OnInit, OnDestroy {
             );
           });
         }),
-        filter(([marker, deviceLocation]) => {
-          console.log('FILTER ', marker);
-          console.log('DEVICE_LOCATION1 ', deviceLocation);
-          console.log('DEVICE_LOCATION2 ', deviceLocation.currentLocation);
-          return (marker as MarkerRef).lastTimeLocationReported < deviceLocation.currentLocation.timestamp;
-        })
       ).subscribe(([marker, deviceLocation]) => {
         console.log('subscribeDeviceLocationWithLocationPathEvent');        
         if (!marker.getMap()) {
@@ -176,11 +173,11 @@ export class MapDialogComponent implements OnInit, OnDestroy {
             marker.updateData(deviceLocation.currentLocation.lng,
             deviceLocation.currentLocation.lat, 1000,
             deviceLocation.currentLocation.timestamp,
-            deviceLocation.currentLocation.ramUsageAlarmActivated,
-            deviceLocation.currentLocation.sdUsageAlarmActivated,
-            deviceLocation.currentLocation.cpuUsageAlarmActivated,
-            deviceLocation.currentLocation.temperatureAlarmActivated,
-            deviceLocation.currentLocation.online, true);
+            deviceLocation.ramUsageAlarmActivated,
+            deviceLocation.sdUsageAlarmActivated,
+            deviceLocation.cpuUsageAlarmActivated,
+            deviceLocation.temperatureAlarmActivated,
+            deviceLocation.online, true);
             marker.updateRoutePath(this.map, deviceLocation.locationPath);
         }
         //this.map.setCenter(new google.maps.LatLng(deviceLocation.currentLocation.lat, deviceLocation.currentLocation.lng));
@@ -199,10 +196,11 @@ export class MapDialogComponent implements OnInit, OnDestroy {
       this.translate.get('MARKER.INFOWINDOW.PLATE'),
       this.translate.get('MARKER.INFOWINDOW.VEHICLE'),
       this.translate.get('MARKER.INFOWINDOW.GROUPNAME'),
-      this.translate.get('MARKER.INFOWINDOW.LAST_LOCATION_TIMESTAMP')
+      this.translate.get('MARKER.INFOWINDOW.LAST_LOCATION_TIMESTAMP'),
+      this.translate.get('MARKER.INFOWINDOW.SEE_MORE'),
+      this.translate.get('MARKER.INFOWINDOW.FOLLOW'),
     )
-      .map(([marker, title, plate, vehicle, groupName, lastLocationTimestamp]) => {
-        console.log('updateMarkerInfoContent ', marker);
+      .map(([marker, title, plate, vehicle, groupName, lastLocationTimestamp, seeMore, follow]) => {
         let infoWindowContent = MarkerRefInfoWindowContent;
 
         const serialStr = (marker.vehicle.serial ? marker.vehicle.serial + '' : '');
@@ -216,6 +214,8 @@ export class MapDialogComponent implements OnInit, OnDestroy {
         infoWindowContent = infoWindowContent.toString().replace('{VEHICLE}', vehicle);
         infoWindowContent = infoWindowContent.toString().replace('{GROUPNAME}', groupName);
         infoWindowContent = infoWindowContent.toString().replace('{LAST_LOCATION_TIMESTAMP}', lastLocationTimestamp);
+        infoWindowContent = infoWindowContent.toString().replace('{SEE_MORE}', seeMore);
+        infoWindowContent = infoWindowContent.toString().replace('{FOLLOW}', follow);
         infoWindowContent = infoWindowContent.toString().replace('$plate', plateStr);
         infoWindowContent = infoWindowContent.toString().replace('$serial', serialStr);
         infoWindowContent = infoWindowContent.toString().replace('$groupName', groupNameStr);
@@ -248,7 +248,6 @@ export class MapDialogComponent implements OnInit, OnDestroy {
    * @param event Event
    */
   onMarkerClick(marker: MarkerRef, event) {
-    console.log("onMarkerClick ===> ", marker);
     marker.infoWindow.close();
     marker.setAnimation(null);
     marker.setAnimation(google.maps.Animation.BOUNCE);
@@ -265,7 +264,11 @@ export class MapDialogComponent implements OnInit, OnDestroy {
    * Executes when the page is being destroyed
    */
   ngOnDestroy(): void {
-    console.log('Destroying map dialog');
+    if (this.subscribers) {
+      this.subscribers.forEach(sub => {
+        sub.unsubscribe();
+      });
+    }
   }
 
 }

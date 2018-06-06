@@ -12,7 +12,7 @@
           <mat-option *ngFor="let filteredDevice of deviceLocationQueryFiltered$ | async" [value]="filteredDevice.id">
             <img style="vertical-align:middle;" aria-hidden src="./assets/devices-location/bus2.svg" height="20" />
             <span class="text-boxed text-uppercase">{{ filteredDevice.id }}</span>
-            <span class="text-boxed text-uppercase">{{filteredDevice.hostname}}</span>
+            <span class="text-boxed text-uppercase" *ngIf="filteredDevice.hostname">{{filteredDevice.hostname}}</span>
             <span class="text-boxed text-uppercase" *ngIf="filteredDevice.groupName">{{filteredDevice.groupName}}</span>
           </mat-option>
         </mat-autocomplete>
@@ -30,8 +30,6 @@
         </mat-option>
       </mat-select>
     </mat-form-field>
-
-    <button mat-raised-button (click)="openDialog()">Pick one</button>
   </div>
   <!-- / HEADER -->
 

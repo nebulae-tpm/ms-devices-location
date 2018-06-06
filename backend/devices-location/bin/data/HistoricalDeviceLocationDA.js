@@ -13,7 +13,9 @@ class HistoricalDeviceLocationDA {
      */
     static saveHistoricalDeviceLocation$(historicalDeviceLocation) {
         const collection = mongoDB.db.collection(collectionName);
-        return Rx.Observable.fromPromise(collection.insertOne(historicalDeviceLocation));
+        //return Rx.Observable.fromPromise(collection.insertOne(historicalDeviceLocation));
+
+        return Rx.Observable.defer(() => collection.insertOne(historicalDeviceLocation));
     }
 
 
@@ -26,7 +28,9 @@ class HistoricalDeviceLocationDA {
         const jsonProjection = {_id:0, "loc.geojson.coordinates":1,"timestamp":1} ;        
         const sort = {"timestamp": -1} ;
         const collection = mongoDB.db.collection(collectionName);
-        return Rx.Observable.fromPromise(collection.find({id: id}, jsonProjection).sort(sort).limit(count).toArray())
+
+        //return Rx.Observable.fromPromise(collection.find({id: id}, jsonProjection).sort(sort).limit(count).toArray())
+        return Rx.Observable.defer(() => collection.find({id: id}, jsonProjection).sort(sort).limit(count).toArray())        
         .mergeMap(historicalDevicesLocation => Rx.Observable.from(historicalDevicesLocation))
         .map(historicalDeviceLocation => {
             return {
@@ -46,7 +50,9 @@ class HistoricalDeviceLocationDA {
         const jsonProjection = {_id:0, "loc.coordinates":1,"timestamp":1} ;
         const sort = {"timestamp": -1} ;
         const collection = mongoDB.db.collection(collectionName);
-        return Rx.Observable.fromPromise(collection.find({id}, jsonProjection).sort(sort).toArray())
+        
+        //return Rx.Observable.fromPromise(collection.find({id}, jsonProjection).sort(sort).toArray())
+        return Rx.Observable.defer(() => collection.find({id}, jsonProjection).sort(sort).toArray())                
         .mergeMap(historicalDevicesLocation => Rx.Observable.from(historicalDevicesLocation))
         .map(historicalDeviceLocation => {
             return {
