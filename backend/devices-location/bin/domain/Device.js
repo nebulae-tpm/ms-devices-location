@@ -104,7 +104,7 @@ class Device {
      * @param {*} authToken Auth token
      */
     updateDeviceAlarmsState$(evt, authToken) {
-        console.log('updateDeviceAlarmsState', JSON.stringify(deviceData));
+        console.log('updateDeviceAlarmsState', JSON.stringify(evt));
 
         let deviceData;
         switch (evt.et) {
