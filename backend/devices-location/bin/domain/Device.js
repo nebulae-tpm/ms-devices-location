@@ -250,6 +250,7 @@ class Device {
      * @param {*} authToken 
      */
     cleanDeviceLocationHistory$(cleanDeviceLocationHistory, authToken){
+        console.log('cleanDeviceLocationHistory => ', new Date());
         return HistoricalDeviceLocationDA.removeHistoricalDeviceLocation$(cleanDeviceLocationHistory);
     }
 
@@ -259,6 +260,7 @@ class Device {
      * @param {*} authToken 
      */
     cleanGroupNames$(cleanDeviceGroupNames, authToken){
+        console.log('cleanGroupNames => ', new Date());
         return DeviceDA.getGroupnamesFromAllDevices$()
         .mergeMap(groupNames => Rx.Observable.from(groupNames))
         .pluck('groupName')
