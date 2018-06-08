@@ -92,6 +92,52 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     this.translationLoader.loadTranslations(english, spanish);
   }
 
+  ngOnInit(): void {
+    this.getParams();
+
+    this.initObservables();
+    this.initMap();
+
+    this.refreshDeviceLocationQuery(undefined, undefined, true);
+    this.createDeviceLocationSubscription();
+
+    this.subscribers.push(this.deviceLocationQuerySubscription);
+    this.subscribers.push(this.deviceLocationSubscriptionSubscription);
+
+    this.subscribers.push(this.translate.onLangChange.subscribe(lang => {
+      const translations = lang.translations.MARKER.INFOWINDOW;
+      this.markers.forEach(m => {
+        let originalInfoWindowContent = MarkerRefInfoWindowContent;
+        const serialStr = (m.vehicle.serial ? m.vehicle.serial + '' : '');
+        const plateStr = (m.vehicle.plate ? m.vehicle.plate : '');
+        const groupNameStr = (m.vehicle.groupName ? m.vehicle.groupName : '');
+
+        const lastLocationTimestampStr = (m.vehicle.lastLocationTimestamp ?
+          this.datePipe.transform(new Date(m.vehicle.lastLocationTimestamp), 'yyyy-MM-dd HH:mm') : '');
+        let content = m.infoWindow.getContent();
+        content = originalInfoWindowContent.toString()
+          .replace('{PLATE}', translations.PLATE)
+          .replace('{TITLE}', translations.TITLE)
+          .replace('{VEHICLE}', translations.VEHICLE)
+          .replace('{GROUPNAME}', translations.GROUPNAME)
+          .replace('{LAST_LOCATION_TIMESTAMP}', translations.LAST_LOCATION_TIMESTAMP)
+          .replace('{SEE_MORE}', translations.SEE_MORE)
+          .replace('{FOLLOW}', translations.FOLLOW);
+
+        content = content.toString().replace('$plate', plateStr);
+        content = content.replace('$serial', serialStr);
+        m.infoWindow.setContent(content);
+
+        let originalTitleContent = MarkerRefTitleContent;
+        let title = '';
+        title = originalTitleContent.toString().replace('{PLATE}', translations.PLATE).replace('{TITLE}', translations.TITLE).replace('{VEHICLE}', translations.VEHICLE);
+        title = title.toString().replace('$plate', plateStr);
+        title = title.replace('$serial', serialStr);
+        m.setTitleMarker(title);
+      });
+    }));
+  }
+
   /**
    * Gets the device groups
    */
@@ -143,7 +189,6 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
   clearMarkerClusterer(){
     if(this.markerClusterer ){
       this.markerClusterer.clearMarkers();
-      //this.markerClusterer.setMap(null);
     }
   }
 
@@ -156,18 +201,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     if(this.markers && this.markers.length > 0){
       this.markerClusterer = new MarkerCluster(this.map, this.markers,
         {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});
-      console.log('markerClusterer created');
     }
-  }
-
-  unregisterMarkerFromCluster(marker){
-    this.markerClusterer.removeMarker(marker, false, true);
-    console.log('unregisterMarkerFromCluster');
-  }
-
-  registerMarkerFromCluster(marker){
-    this.markerClusterer.addMarker(marker);
-    console.log('registerMarkerFromCluster');
   }
 
   refreshDeviceLocationQuery(filterText: String, groupName: String, firstTime: Boolean = false) {
@@ -178,7 +212,6 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
         mergeMap((deviceLocation: any) => {
           return this.manageMarkers(deviceLocation);
         }),
-        //filter(([marker, deviceLocation]) => (marker as MarkerRef).lastTimeLocationReported < deviceLocation.currentLocation.timestamp)
       ).subscribe(([marker, deviceLocation]) => {
         if (!marker.getMap()) {
           marker.setMap(this.map);
@@ -194,8 +227,6 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
             deviceLocation.temperatureAlarmActivated,
             deviceLocation.online, false, this.showDisconnectedDevices
           );
-
-          //marker.moveMarkerSmoothly(deviceLocation.currentLocation.timestamp, false, this.unregisterMarkerFromCluster, this.registerMarkerFromCluster)
         }
 
         this.updateMarkerInfoContent(marker, deviceLocation).subscribe(val => {});
@@ -217,13 +248,76 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
           }else{
             this.adjustZoomAccordingToTheMarkers();
             if(firstTime && this.selectedDeviceSerial){
-              console.log('First time: ', this.selectedDeviceSerial);
               this.getSelectedDevice(this.selectedDeviceSerial);
             }
           }
 
           this.updateMarkerClusterer();
         });
+  }
+
+  /**
+   * Subscribe to graphql to receive device location events
+   */
+  createDeviceLocationSubscription(){
+    this.deviceLocationSubscriptionSubscription = this.devicesLocationService
+    .subscribeDeviceLocation()
+    .pipe(
+      mergeMap(deviceLocation => {
+        return this.manageMarkers(deviceLocation.data.deviceLocationEvent);
+      }),
+    ).subscribe(([marker, deviceLocation]) => {
+      if(this.selectedDeviceGroup && deviceLocation.groupName != this.selectedDeviceGroup){
+        return;
+      }
+
+      if (!this.isMarkerInArray(marker)) {
+        marker.setMap(this.map);
+        this.addMarkerToMap(marker);
+      } else {
+        marker.updateData(deviceLocation.currentLocation.lng,
+          deviceLocation.currentLocation.lat, 1000,
+          deviceLocation.currentLocation.timestamp,
+          deviceLocation.ramUsageAlarmActivated,
+          deviceLocation.sdUsageAlarmActivated,
+          deviceLocation.cpuUsageAlarmActivated,
+          deviceLocation.temperatureAlarmActivated,
+          deviceLocation.online, false);
+      }
+
+      this.updateMarkerClusterer();
+      this.updateMarkerInfoContent(marker, deviceLocation).subscribe(val => {
+      });
+    });
+  }
+
+  /**
+   * Sets default configurations to the map
+   */
+  initMap() {
+    const mapOptions = {
+      center: new google.maps.LatLng(6.1701312, -75.6058417),
+      zoom: 14,
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+
+    this.map = new MapRef(this.gmapElement.nativeElement, mapOptions);
+  }
+
+  /**
+   * Indicates if the marker indicated exists in the array of markers
+   * @param serial Serial number of the device to check
+   */
+  isMarkerInArray(markerToCheck: MarkerRef){
+    const markersFiltered = this.markers.filter(marker => marker.vehicle.serial == markerToCheck.vehicle.serial);
+    return markersFiltered && markersFiltered.length > 0;
+  }
+
+  getParams(){
+    this.activatedRouter.params
+    .subscribe(params => {
+      this.selectedDeviceSerial = params['id'];
+    });
   }
 
   /**
@@ -245,7 +339,6 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
    */
   showAndHideDisconnectedDevices() {
     this.showDisconnectedDevices = !this.showDisconnectedDevices;
-    console.log('this.showDisconnectedDevices ', this.showDisconnectedDevices);
     this.markers.forEach(marker => {
       if(!marker.vehicle.online){
         marker.setVisible(this.showDisconnectedDevices);
@@ -253,8 +346,10 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Refresh the devices according to the new device group selected
+   */
   onDeviceGroupChanged(deviceGroup: String) {
-    console.log('Selected device group => ', deviceGroup);
     this.selectedDeviceGroup = deviceGroup;
     this.clearMap();
     this.refreshDeviceLocationQuery(undefined, this.selectedDeviceGroup);
@@ -271,122 +366,12 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     this.markers = [];
   }
 
-  getParams(){
-    this.activatedRouter.params
-    .subscribe(params => {
-      this.selectedDeviceSerial = params['id'];
-    });
-  }
-
-  /**
-   * Indicates if the marker indicated exists in the array of markers
-   * @param serial Serial number of the device to check
-   */
-  isMarkerInArray(markerToCheck: MarkerRef){
-    const markersFiltered = this.markers.filter(marker => marker.vehicle.serial == markerToCheck.vehicle.serial);
-    return markersFiltered && markersFiltered.length > 0;
-  }
-
-  ngOnInit(): void {
-    this.getParams();
-
-
-    this.initObservables();
-    this.initMap();
-
-    this.refreshDeviceLocationQuery(undefined, undefined, true);
-
-    this.deviceLocationSubscriptionSubscription = this.devicesLocationService
-      .subscribeDeviceLocation()
-      .pipe(
-        mergeMap(deviceLocation => {
-          return this.manageMarkers(deviceLocation.data.deviceLocationEvent);
-        }),
-      ).subscribe(([marker, deviceLocation]) => {
-        console.log('Update location of a device: ', deviceLocation);
-        console.log('Marker has map =>', (!marker.getMap()));
-        //this.unregisterMarkerFromCluster(marker);
-
-        if (!this.isMarkerInArray(marker)) {
-          console.log("Marker1");
-          marker.setMap(this.map);
-          this.addMarkerToMap(marker);
-        } else {
-          console.log("Marker2");
-          marker.updateData(deviceLocation.currentLocation.lng,
-            deviceLocation.currentLocation.lat, 1000,
-            deviceLocation.currentLocation.timestamp,
-            deviceLocation.ramUsageAlarmActivated,
-            deviceLocation.sdUsageAlarmActivated,
-            deviceLocation.cpuUsageAlarmActivated,
-            deviceLocation.temperatureAlarmActivated,
-            deviceLocation.online, false);
-        }
-
-        this.updateMarkerClusterer();
-        this.updateMarkerInfoContent(marker, deviceLocation).subscribe(val => {
-        });
-      });
-
-    this.subscribers.push(this.deviceLocationQuerySubscription);
-    this.subscribers.push(this.deviceLocationSubscriptionSubscription);
-
-    this.subscribers.push(this.translate.onLangChange.subscribe(lang => {
-      const translations = lang.translations.MARKER.INFOWINDOW;
-      this.markers.forEach(m => {
-        let originalInfoWindowContent = MarkerRefInfoWindowContent;
-        const serialStr = (m.vehicle.serial ? m.vehicle.serial + '' : '');
-        const plateStr = (m.vehicle.plate ? m.vehicle.plate : '');
-        const groupNameStr = (m.vehicle.groupName ? m.vehicle.groupName : '');
-
-        const lastLocationTimestampStr = (m.vehicle.lastLocationTimestamp ?
-          this.datePipe.transform(new Date(m.vehicle.lastLocationTimestamp), 'yyyy-MM-dd HH:mm') : '');
-        let content = m.infoWindow.getContent();
-        content = originalInfoWindowContent.toString()
-          .replace('{PLATE}', translations.PLATE)
-          .replace('{TITLE}', translations.TITLE)
-          .replace('{VEHICLE}', translations.VEHICLE)
-          .replace('{GROUPNAME}', translations.GROUPNAME)
-          .replace('{LAST_LOCATION_TIMESTAMP}', translations.LAST_LOCATION_TIMESTAMP)
-          .replace('{SEE_MORE}', translations.SEE_MORE)
-          .replace('{FOLLOW}', translations.FOLLOW);
-
-        content = content.toString().replace('$plate', plateStr);
-        content = content.replace('$serial', serialStr);
-        m.infoWindow.setContent(content);
-
-        let originalTitleContent = MarkerRefTitleContent;
-        let title = '';
-        title = originalTitleContent.toString().replace('{PLATE}', translations.PLATE).replace('{TITLE}', translations.TITLE).replace('{VEHICLE}', translations.VEHICLE);
-        title = title.toString().replace('$plate', plateStr);
-        title = title.replace('$serial', serialStr);
-        m.setTitleMarker(title);
-      });
-    }));
-
-  }
-
-  /**
-   * Sets default configurations to the map
-   */
-  initMap() {
-    const mapOptions = {
-      center: new google.maps.LatLng(6.1701312, -75.6058417),
-      zoom: 14,
-      mapTypeId: google.maps.MapTypeId.ROADMAP
-    };
-
-    this.map = new MapRef(this.gmapElement.nativeElement, mapOptions);
-  }
-
   manageMarkers(deviceLocation): Observable<[MarkerRef, any]> {
     return Observable.from(this.markers).
     pipe(
-      tap(val => console.log("Check marker => ", val)),
       filter(marker => {
         return marker.vehicle.serial == deviceLocation.id && deviceLocation.currentLocation != null;
       }),
-      tap(val => console.log("marker found => ", val)),
       defaultIfEmpty(
         new MarkerRef(
           {

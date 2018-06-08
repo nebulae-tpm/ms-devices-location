@@ -17,7 +17,6 @@ export class DevicesLocationService {
   constructor(private http: HttpClient, private gateway: GatewayService) { }
 
   getAllDevicesLocation(): Observable<any> {
-    console.log('test1');
     return this.gateway.apollo
       .query<any>({
         query: getDevicesLocation

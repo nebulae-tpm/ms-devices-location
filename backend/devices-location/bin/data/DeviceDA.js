@@ -114,7 +114,6 @@ class DeviceDA {
      * @param {*} deviceData Data reported by the device
      */
     static updateCurrentDeviceLocation$(deviceData) {
-        console.log('updateCurrentLocation ==> ', deviceData);
         const collection = mongoDB.db.collection(collectionName);
         return Rx.Observable.bindNodeCallback(collection.findOneAndUpdate.bind(collection))(
             {

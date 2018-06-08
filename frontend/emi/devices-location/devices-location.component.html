@@ -41,9 +41,9 @@
 
  <div id="cover-div" fxLayout="column" fxLayoutAlign="center end">
   <button mat-mini-fab (click)="adjustZoomAccordingToTheMarkers()" matTooltip="{{ 'OPTION_PANEL.FIT_ZOOM_MARKERS' | translate }}">
-    <mat-icon aria-label="Adjust zoom according to the markers">zoom_out_map</mat-icon>
+    <mat-icon aria-label="Adjust zoom according to the markers">center_focus_strong</mat-icon>
   </button>
-  <button mat-mini-fab color="primary" (click)="showAndHideDisconnectedDevices()" *ngIf="showDisconnectedDevices" matTooltip="{{ 'OPTION_PANEL.HIDE_DISCONNECTED_DEVICE' | translate }}">
+  <button mat-mini-fab class="mat-grey-bg" (click)="showAndHideDisconnectedDevices()" *ngIf="showDisconnectedDevices" matTooltip="{{ 'OPTION_PANEL.HIDE_DISCONNECTED_DEVICE' | translate }}">
     <mat-icon aria-label="Show/hide disconnnected devices">wifi</mat-icon>
   </button>
   <button mat-mini-fab color="accent" (click)="showAndHideDisconnectedDevices()" *ngIf="!showDisconnectedDevices" matTooltip="{{ 'OPTION_PANEL.SHOW_DISCONNECTED_DEVICE' | translate }}">

@@ -188,7 +188,6 @@ export class MarkerRef extends google.maps.Marker {
       }
 
       this.lastTimeLocationReported = timeLocationReported;
-      console.log('Move marker');
       this.moveMarker(center, endCallBack);
     }
   }
@@ -207,8 +206,6 @@ export class MarkerRef extends google.maps.Marker {
    * @param locationPath
    */
   updateRoutePath(map, locationPath?: [LocationPath]) {
-    //console.log('updateRoutePath ', locationPath);
-    //
     if (!locationPath && locationPath.length < 1) {
       return;
     }

@@ -47,7 +47,6 @@ module.exports = {
 
 broker.getMaterializedViewsUpdates$(['deviceLocationEvent']).subscribe(
   evt => {
-    console.log("Subscription response1 => ", evt);
     pubsub.publish('deviceLocationEvent', { deviceLocationEvent: evt.data });
   },
   (error) => console.error('Error listening deviceLocationEvent', error),

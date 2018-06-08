@@ -104,8 +104,6 @@ class Device {
      * @param {*} authToken Auth token
      */
     updateDeviceAlarmsState$(evt, authToken) {
-        console.log('updateDeviceAlarmsState', JSON.stringify(evt));
-
         let deviceData;
         switch (evt.et) {
             case 'DeviceRamuUsageAlarmActivated':
@@ -262,14 +260,11 @@ class Device {
      * @param {*} authToken 
      */
     cleanGroupNames$(cleanDeviceGroupNames, authToken){
-        console.log("cleanGroupNames0");
         return DeviceDA.getGroupnamesFromAllDevices$()
         .mergeMap(groupNames => Rx.Observable.from(groupNames))
         .pluck('groupName')
         .toArray()
-        .do(groupNames => console.log("cleanGroupNames1 ", groupNames))
-        .mergeMap(groupNames => DeviceGroupDA.removeAllGroupNamesExceptInArray$(groupNames))
-        .do(groupNames => console.log("cleanGroupNames2 ", groupNames));
+        .mergeMap(groupNames => DeviceGroupDA.removeAllGroupNamesExceptInArray$(groupNames));
     }
 
 }

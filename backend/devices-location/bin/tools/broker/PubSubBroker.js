@@ -207,7 +207,7 @@ class PubSubBroker {
                     senderId: this.senderId,
                     correlationId
                 }))
-            .do(messageId => console.log(`1Message published through ${topic.name}, MessageId=${messageId}`, new Date()))
+            .do(messageId => console.log(`Message published through ${topic.name}, MessageId=${messageId}`, new Date()))
             ;
     }
 
