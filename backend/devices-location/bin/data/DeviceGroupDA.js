@@ -57,6 +57,18 @@ class DeviceGroupDA {
         ).map(result => result && result.value ? result.value : undefined);
     }
 
+    /**
+     * Remove all groupnames except the values that are in the array
+     * @param {*} groupNames
+     */
+    static removeAllGroupNamesExceptInArray$(groupNames) {
+        const collection = mongoDB.db.collection(collectionName);
+        
+        return Rx.Observable.defer(() => 
+            collection.remove({"name": {$nin: groupNames}})
+        );
+    }
+
 }
 
 module.exports = DeviceGroupDA;

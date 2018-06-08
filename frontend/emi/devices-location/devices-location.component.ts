@@ -1,4 +1,5 @@
 import { Router, ActivatedRoute } from '@angular/router';
+import {MatSnackBar} from '@angular/material';
 import { MapDialogComponent } from './dialog/map-dialog.component';
 import { DatePipe } from '@angular/common';
 import { Subscription } from 'rxjs/Subscription';
@@ -28,7 +29,7 @@ import { locale as english } from './i18n/en';
 import { locale as spanish } from './i18n/es';
 import { FuseTranslationLoaderService } from "../../../core/services/translation-loader.service";
 import { TranslateService } from "@ngx-translate/core";
-import { toArray, tap, mergeMap, filter, map } from 'rxjs/operators';
+import { toArray, tap, mergeMap, filter, map, defaultIfEmpty, first } from 'rxjs/operators';
 import { startWith } from 'rxjs/operators/startWith';
 import { distinctUntilChanged } from 'rxjs/operators/distinctUntilChanged';
 import { MatDialog, MatDialogConfig, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
@@ -65,9 +66,15 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
   markers: MarkerRef[] = [];
   deviceFilterCtrl: FormControl;
 
+  /////////////// OPTIONS MAP ///////////////
+
+  showDisconnectedDevices = true;
+
+  ///////////////////////////////////////////
+
   constructor(private translationLoader: FuseTranslationLoaderService, public dialog: MatDialog, private router: Router,
     private translate: TranslateService, private devicesLocationService: DevicesLocationService, private datePipe: DatePipe,
-    private activatedRouter: ActivatedRoute, private zone: NgZone) {
+    private activatedRouter: ActivatedRoute, public snackBar: MatSnackBar, private zone: NgZone) {
 
     window['angularComponentReference'] = {
         zone: this.zone,
@@ -95,7 +102,6 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
         debounceTime(500),
         distinctUntilChanged(),
         mergeMap((filterText:String) => {
-          console.log('this.selectedDeviceGroup ******* ', filterText, this.selectedDeviceGroup);
           return this.getAllDevicesFiltered(filterText, this.selectedDeviceGroup, 10);
         })
       );
@@ -129,6 +135,8 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
       });
   }
 
+  
+
   /**
    * Clears the current marker clusterer
    */
@@ -139,18 +147,30 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Update markert clusterer
+   */
   updateMarkerClusterer() {
-    console.log('updateMarkerClusterer ', this.markers);
-
     this.clearMarkerClusterer();
 
-    this.markerClusterer = new MarkerCluster(this.map, this.markers,
-      {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});
+    if(this.markers && this.markers.length > 0){
+      this.markerClusterer = new MarkerCluster(this.map, this.markers,
+        {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});
+      console.log('markerClusterer created');
+    }
   }
 
+  unregisterMarkerFromCluster(marker){
+    this.markerClusterer.removeMarker(marker, false, true);
+    console.log('unregisterMarkerFromCluster');
+  }
+
+  registerMarkerFromCluster(marker){
+    this.markerClusterer.addMarker(marker);
+    console.log('registerMarkerFromCluster');
+  }
 
   refreshDeviceLocationQuery(filterText: String, groupName: String, firstTime: Boolean = false) {
-    this.bounds = new google.maps.LatLngBounds();
     this.deviceLocationQuerySubscription = this.devicesLocationService
       .getDevicesLocationByFilter(filterText, groupName, undefined)
       .pipe(
@@ -163,8 +183,6 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
         if (!marker.getMap()) {
           marker.setMap(this.map);
           marker.lastTimeLocationReported = deviceLocation.currentLocation.timestamp;
-          const loc = new google.maps.LatLng(marker.getPosition().lat(), marker.getPosition().lng());
-          this.bounds.extend(loc);
           this.addMarkerToMap(marker);
         } else {
           marker.updateData(deviceLocation.currentLocation.lng,
@@ -174,35 +192,71 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
             deviceLocation.sdUsageAlarmActivated,
             deviceLocation.cpuUsageAlarmActivated,
             deviceLocation.temperatureAlarmActivated,
-            deviceLocation.online, false
+            deviceLocation.online, false, this.showDisconnectedDevices
           );
+
+          //marker.moveMarkerSmoothly(deviceLocation.currentLocation.timestamp, false, this.unregisterMarkerFromCluster, this.registerMarkerFromCluster)
         }
-        
-        this.updateMarkerInfoContent(marker, deviceLocation).subscribe(val => {
-          console.log('updateMarkerInfoContent => ', val);
-        }, error => {
-          console.log('Error updateMarkerInfoContent => ', error);
-        }, function() {
-          console.log('Complete updateMarkerInfoContent');
-        });
+
+        this.updateMarkerInfoContent(marker, deviceLocation).subscribe(val => {});
       },
         error => console.error(error),
         () => {
-          this.map.fitBounds(this.bounds);
-          this.map.panToBounds(this.bounds);
-          if(firstTime && this.selectedDeviceSerial){
-            console.log('First time: ', this.selectedDeviceSerial);
-            this.getSelectedDevice(this.selectedDeviceSerial);
+          if(this.markers && this.markers.length == 0){
+            this.translate.get(['LOCATION.VEHICLES_NOT_FOUND_ON_GROUPNAME', 'LOCATION.SNACK_BAR_CLOSE'])
+            .subscribe(translationData => {
+                this.snackBar.open(
+                  translationData['LOCATION.VEHICLES_NOT_FOUND_ON_GROUPNAME'],
+                  translationData['LOCATION.SNACK_BAR_CLOSE'],
+                  {
+                    duration: 2000
+                  }
+                );
+              }
+            );
+          }else{
+            this.adjustZoomAccordingToTheMarkers();
+            if(firstTime && this.selectedDeviceSerial){
+              console.log('First time: ', this.selectedDeviceSerial);
+              this.getSelectedDevice(this.selectedDeviceSerial);
+            }
           }
+
           this.updateMarkerClusterer();
         });
+  }
+
+  /**
+   * Adjusts the zoom according to the markers
+   */
+  adjustZoomAccordingToTheMarkers(){
+    this.bounds = new google.maps.LatLngBounds();
+    this.markers.forEach(marker => {
+      const loc = new google.maps.LatLng(marker.getPosition().lat(), marker.getPosition().lng());
+      this.bounds.extend(loc);
+    });
+
+    this.map.fitBounds(this.bounds);
+    this.map.panToBounds(this.bounds);
+  }
+
+  /**
+   * Shows/hides the markers of the devices that are disconnected
+   */
+  showAndHideDisconnectedDevices() {
+    this.showDisconnectedDevices = !this.showDisconnectedDevices;
+    console.log('this.showDisconnectedDevices ', this.showDisconnectedDevices);
+    this.markers.forEach(marker => {
+      if(!marker.vehicle.online){
+        marker.setVisible(this.showDisconnectedDevices);
+      }
+    });
   }
 
   onDeviceGroupChanged(deviceGroup: String) {
     console.log('Selected device group => ', deviceGroup);
     this.selectedDeviceGroup = deviceGroup;
     this.clearMap();
-    //this.clearMarkerClusterer();
     this.refreshDeviceLocationQuery(undefined, this.selectedDeviceGroup);
     this.deviceFilterCtrl.setValue("", { emitEvent: true });
   }
@@ -224,6 +278,15 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Indicates if the marker indicated exists in the array of markers
+   * @param serial Serial number of the device to check
+   */
+  isMarkerInArray(markerToCheck: MarkerRef){
+    const markersFiltered = this.markers.filter(marker => marker.vehicle.serial == markerToCheck.vehicle.serial);
+    return markersFiltered && markersFiltered.length > 0;
+  }
+
   ngOnInit(): void {
     this.getParams();
 
@@ -240,10 +303,16 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
           return this.manageMarkers(deviceLocation.data.deviceLocationEvent);
         }),
       ).subscribe(([marker, deviceLocation]) => {
-        if (!marker.getMap()) {
+        console.log('Update location of a device: ', deviceLocation);
+        console.log('Marker has map =>', (!marker.getMap()));
+        //this.unregisterMarkerFromCluster(marker);
+
+        if (!this.isMarkerInArray(marker)) {
+          console.log("Marker1");
           marker.setMap(this.map);
           this.addMarkerToMap(marker);
         } else {
+          console.log("Marker2");
           marker.updateData(deviceLocation.currentLocation.lng,
             deviceLocation.currentLocation.lat, 1000,
             deviceLocation.currentLocation.timestamp,
@@ -253,6 +322,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
             deviceLocation.temperatureAlarmActivated,
             deviceLocation.online, false);
         }
+
         this.updateMarkerClusterer();
         this.updateMarkerInfoContent(marker, deviceLocation).subscribe(val => {
         });
@@ -279,7 +349,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
           .replace('{GROUPNAME}', translations.GROUPNAME)
           .replace('{LAST_LOCATION_TIMESTAMP}', translations.LAST_LOCATION_TIMESTAMP)
           .replace('{SEE_MORE}', translations.SEE_MORE)
-          .replace('{FOLLOW}', translations.FOLLOW);           
+          .replace('{FOLLOW}', translations.FOLLOW);
 
         content = content.toString().replace('$plate', plateStr);
         content = content.replace('$serial', serialStr);
@@ -310,11 +380,14 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
   }
 
   manageMarkers(deviceLocation): Observable<[MarkerRef, any]> {
-    return Observable.from(this.markers)
-      .filter(marker => {
+    return Observable.from(this.markers).
+    pipe(
+      tap(val => console.log("Check marker => ", val)),
+      filter(marker => {
         return marker.vehicle.serial == deviceLocation.id && deviceLocation.currentLocation != null;
-      })
-      .defaultIfEmpty(
+      }),
+      tap(val => console.log("marker found => ", val)),
+      defaultIfEmpty(
         new MarkerRef(
           {
             plate: deviceLocation.hostname,
@@ -333,15 +406,15 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
               lng: parseFloat(deviceLocation.currentLocation.lng)
             }, map: null
           })
-      )
-      .first()
-      //.mergeMap(marker => this.updateMarkerInfoContent(marker, deviceLocation))
-      .mergeMap(marker => {
-        return Rx.Observable.forkJoin(
-          Rx.Observable.of(marker),
-          Rx.Observable.of(deviceLocation)
-        );
-      });
+      ),
+      first(),
+      mergeMap(marker => {
+          return Rx.Observable.forkJoin(
+            Rx.Observable.of(marker),
+            Rx.Observable.of(deviceLocation)
+          );
+      })
+    );
   }
 
   /**
@@ -456,7 +529,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     dialogConfig.width = '400px';
     dialogConfig.height = '385px';
     dialogConfig.data = { followedMarkerId: this.selectedMarker.vehicle.serial };
-    
+
     let dialogRef = this.dialog.open(MapDialogComponent, dialogConfig);
   }
 

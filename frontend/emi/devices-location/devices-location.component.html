@@ -30,14 +30,28 @@
         </mat-option>
       </mat-select>
     </mat-form-field>
+
   </div>
   <!-- / HEADER -->
 
   <!-- CONTENT -->
 
  <div #gmap style="width:100%; height:100%; margin: 0; padding: 0">
+ </div>
 
-
+ <div id="cover-div" fxLayout="column" fxLayoutAlign="center end">
+  <button mat-mini-fab (click)="adjustZoomAccordingToTheMarkers()" matTooltip="{{ 'OPTION_PANEL.FIT_ZOOM_MARKERS' | translate }}">
+    <mat-icon aria-label="Adjust zoom according to the markers">zoom_out_map</mat-icon>
+  </button>
+  <button mat-mini-fab color="primary" (click)="showAndHideDisconnectedDevices()" *ngIf="showDisconnectedDevices" matTooltip="{{ 'OPTION_PANEL.HIDE_DISCONNECTED_DEVICE' | translate }}">
+    <mat-icon aria-label="Show/hide disconnnected devices">wifi</mat-icon>
+  </button>
+  <button mat-mini-fab color="accent" (click)="showAndHideDisconnectedDevices()" *ngIf="!showDisconnectedDevices" matTooltip="{{ 'OPTION_PANEL.SHOW_DISCONNECTED_DEVICE' | translate }}">
+      <mat-icon aria-label="Show/hide disconnnected devices">wifi</mat-icon>
+  </button>
+  <button mat-mini-fab (click)="updateMarkerClusterer()" *ngIf="false">
+    <mat-icon aria-label="Show/hide disconnnected devices">text_format</mat-icon>
+  </button>
  </div>
 
 

@@ -125,8 +125,23 @@ class DeviceDA {
                 upsert: false,
                 returnOriginal: false
             }
-        ).map(result => result && result.value ? result.value : undefined)
-        .do(currentLocation => console.log('************ CURRENT LOCATION ', currentLocation));
+        ).map(result => result && result.value ? result.value : undefined);
+    }
+
+    /**
+     * Cleans groupnames that are not being used
+     * @param {*}
+     */
+    static getGroupnamesFromAllDevices$() {
+        const collection = mongoDB.db.collection(collectionName);
+
+        return Rx.Observable.defer(() => 
+            collection.aggregate([
+                {$match: {groupName: {'$ne': null}}},
+                {$group: {_id:'$groupName'}},   
+                {$project: {_id:0, groupName: '$_id'}}
+            ]).toArray()
+        );
     }
 
 }

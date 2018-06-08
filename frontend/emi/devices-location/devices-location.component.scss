@@ -18,3 +18,15 @@
 .example-full-width {
   width: 100%;
 }
+
+div #cover-div {
+  position:absolute;
+  bottom: 25px;
+  left: 5px;
+  z-index:3;
+}
+
+div #cover-div button {
+  //padding-bottom: 3px;
+  margin-bottom: 3px;
+}

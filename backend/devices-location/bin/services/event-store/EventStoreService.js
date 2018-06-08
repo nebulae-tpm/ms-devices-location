@@ -122,8 +122,9 @@ class EventStoreService {
             'DeviceTemperatureAlarmActivated': { fn: device.updateDeviceAlarmsState$, obj: device },
             'DeviceTemperatureAlarmDeactivated': { fn: device.updateDeviceAlarmsState$, obj: device },
             'DeviceConnected': { fn: device.updateDeviceAlarmsState$, obj: device },
-            'DeviceDisconnected': { fn: device.updateDeviceAlarmsState$, obj: device },
-            'CleanDeviceLocationHistoryJobTriggered': { fn: device.cleanDeviceLocationHistory$, obj: device }
+            //'DeviceDisconnected': { fn: device.updateDeviceAlarmsState$, obj: device },
+            'CleanDeviceLocationHistoryJobTriggered': { fn: device.cleanDeviceLocationHistory$, obj: device },
+            'CleanGroupNamesJobTriggered': { fn: device.cleanGroupNames$, obj: device }
         };
     }
 
@@ -143,8 +144,9 @@ class EventStoreService {
             { aggregateType: 'Device', eventType: 'DeviceTemperatureAlarmActivated' },
             { aggregateType: 'Device', eventType: 'DeviceTemperatureAlarmDeactivated', },
             { aggregateType: 'Device', eventType: 'DeviceConnected' },
-            { aggregateType: 'Device', eventType: 'DeviceDisconnected' },
+            //{ aggregateType: 'Device', eventType: 'DeviceDisconnected' },
             { aggregateType: 'Cronjob', eventType: 'CleanDeviceLocationHistoryJobTriggered' },
+            { aggregateType: 'Cronjob', eventType: 'CleanGroupNamesJobTriggered' },
         ];
     }
 

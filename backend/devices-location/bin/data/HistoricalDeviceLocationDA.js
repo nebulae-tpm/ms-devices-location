@@ -65,7 +65,7 @@ class HistoricalDeviceLocationDA {
 
     /**
      * Cleans historical device location by 
-     * @param {*} id Device ID
+     * @param {*} cleanHistoricalDeviceLocation 
      */
     static removeHistoricalDeviceLocation$(cleanHistoricalDeviceLocation) {
         const keepLastNLocations = cleanHistoricalDeviceLocation.data.keepLastNLocations ?

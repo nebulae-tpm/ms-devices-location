@@ -5,3 +5,14 @@
   color: #fff;
   cursor: move;
 }
+
+div #deviceViewer-div {
+  position:fixed;
+  bottom: 25px;
+  left: 5px;
+  z-index:3;
+}
+
+div #deviceViewer-div button {
+  margin-bottom: 3px;
+}

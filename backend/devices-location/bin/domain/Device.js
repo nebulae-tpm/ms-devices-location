@@ -256,6 +256,22 @@ class Device {
         return HistoricalDeviceLocationDA.removeHistoricalDeviceLocation$(cleanDeviceLocationHistory);
     }
 
+    /**
+     * Removes groupnames that are not being used
+     * @param {*} cleanDeviceLocationHistory 
+     * @param {*} authToken 
+     */
+    cleanGroupNames$(cleanDeviceGroupNames, authToken){
+        console.log("cleanGroupNames0");
+        return DeviceDA.getGroupnamesFromAllDevices$()
+        .mergeMap(groupNames => Rx.Observable.from(groupNames))
+        .pluck('groupName')
+        .toArray()
+        .do(groupNames => console.log("cleanGroupNames1 ", groupNames))
+        .mergeMap(groupNames => DeviceGroupDA.removeAllGroupNamesExceptInArray$(groupNames))
+        .do(groupNames => console.log("cleanGroupNames2 ", groupNames));
+    }
+
 }
 
 module.exports = () => {

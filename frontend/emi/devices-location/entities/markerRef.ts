@@ -83,6 +83,8 @@ export class MarkerRef extends google.maps.Marker {
 
   delay = 10;
 
+  iconUrl;
+
   lastLocationPath: [LocationPath];
 
   allMap: MapRef;
@@ -110,24 +112,28 @@ export class MarkerRef extends google.maps.Marker {
    * Updates the marker icon according to the vehicle states (Online, Alarmed, Offline)
    */
   updateIcon() {
-    let iconUrl = "./assets/devices-location/busOnline.svg";
+    let newIconUrl = "./assets/devices-location/busOnline.svg";
     if ((this.vehicle.ramUsageAlarmActivated
       || this.vehicle.sdUsageAlarmActivated
       || this.vehicle.cpuUsageAlarmActivated
       || this.vehicle.temperatureAlarmActivated) && this.vehicle.online) {
-      iconUrl = "./assets/devices-location/busAlarmed.svg";
+      newIconUrl = "./assets/devices-location/busAlarmed.svg";
     } else if (this.vehicle.online) {
-      iconUrl = "./assets/devices-location/busOnline.svg";
+      newIconUrl = "./assets/devices-location/busOnline.svg";
     } else {
-      iconUrl = "./assets/devices-location/busOffline.svg";
+      newIconUrl = "./assets/devices-location/busOffline.svg";
     }
 
-    const icon = {
-      url: iconUrl,
-      anchor: new google.maps.Point(30, 30),
-      scaledSize: new google.maps.Size(30, 30)
-    };
-    this.setIcon(icon);
+    //We only upodate the icon if it had changed.
+    if (newIconUrl != this.iconUrl) {
+      this.iconUrl = newIconUrl;
+      const icon = {
+        url: newIconUrl,
+        anchor: new google.maps.Point(30, 30),
+        scaledSize: new google.maps.Size(30, 30)
+      };
+      this.setIcon(icon);
+    }
   }
 
   /**
@@ -139,7 +145,7 @@ export class MarkerRef extends google.maps.Marker {
    * @param vehicle
    */
   updateData(lng: number, lat: number, delay: number, timeLocationReported: number, ramUsageAlarmActivated: Boolean,
-    sdUsageAlarmActivated: Boolean, cpuUsageAlarmActivated: Boolean, temperatureAlarmActivated: Boolean, online: Boolean, center = false) {
+    sdUsageAlarmActivated: Boolean, cpuUsageAlarmActivated: Boolean, temperatureAlarmActivated: Boolean, online: Boolean, center = false, showDisconnectedDevices = true) {
     this.setVisibility(100);
     this.index = 0;
 
@@ -158,17 +164,42 @@ export class MarkerRef extends google.maps.Marker {
 
     this.vehicle.online = online;
 
-    this.updateIcon();
+    if(!online && !showDisconnectedDevices){
+      this.setVisible(showDisconnectedDevices);
+    }
 
+    this.updateIcon();
+    this.moveMarkerSmoothly(timeLocationReported, false);
+  }
+
+  /**
+   *
+   * @param timeLocationReported
+   * @param center
+   * @param initCallBack
+   * @param endCallBack
+   */
+  moveMarkerSmoothly(timeLocationReported: number, center = false, initCallBack?, endCallBack?) {
     //The marker only can be moved if the time of the new location is greater than the time of the last location reported
-    if(this.lastTimeLocationReported < timeLocationReported){
+    if (this.lastTimeLocationReported < timeLocationReported) {
+
+      if(initCallBack){
+        initCallBack(this);
+      }
+
       this.lastTimeLocationReported = timeLocationReported;
-      this.moveMarker(center);
+      console.log('Move marker');
+      this.moveMarker(center, endCallBack);
     }
   }
 
-  putMap(map: MapRef){
+  putMap(map: MapRef) {
     this.allMap = map;
+  }
+
+  
+  changeRoutePathVisibility(visible: boolean){
+    this.routePath.setVisible(visible);
   }
 
   /**
@@ -182,14 +213,14 @@ export class MarkerRef extends google.maps.Marker {
       return;
     }
 
-    if (this.routePath) {      
-      if(this.lastLocationPath && this.lastLocationPath.length > 0){
-        if(this.lastLocationPath[0].timestamp > locationPath[0].timestamp){
+    if (this.routePath) {
+      if (this.lastLocationPath && this.lastLocationPath.length > 0) {
+        if (this.lastLocationPath[0].timestamp > locationPath[0].timestamp) {
           //It means that the location path received is older, therefore, we cannot take this new location path.
           return;
         }
       }
-      
+
       this.lastLocationPath = locationPath;
       this.routePath.setMap(null);
     }
@@ -211,14 +242,14 @@ export class MarkerRef extends google.maps.Marker {
     this.routePath.setMap(map);
   }
 
-  moveMarker(center = false) {
+  moveMarker(center = false, endCallBack?) {
     const lat = this.getPosition().lat() + this.deltaLat;
     const lng = this.getPosition().lng() + this.deltaLng;
     this.setPosition(
       new google.maps.LatLng(lat, lng)
     );
 
-    if(this.allMap){
+    if (this.allMap) {
       this.allMap.setCenter(this.getPosition());
     }
 
@@ -231,8 +262,12 @@ export class MarkerRef extends google.maps.Marker {
       this.setPosition(
         new google.maps.LatLng(lat, lng)
       );
-      if(this.allMap){
+      if (this.allMap) {
         this.allMap.setCenter(this.getPosition());
+      }
+
+      if(endCallBack){
+        endCallBack(this);
       }
     }
   }
@@ -253,15 +288,15 @@ export class MarkerRef extends google.maps.Marker {
   }
 }
 
-export const MarkerRefInfoWindowContent = '<html><style>input:hover {color: blue;}</style><body>   <div>' +
+export const MarkerRefInfoWindowContent = '<html><style>#deviceInfoWindow input:hover {color: blue;}</style><body>   <div id="deviceInfoWindow">' +
   '<p align="right"><input type="button" name="Edit" value="{FOLLOW}" onclick="window.DeviceViewerReference.zone.run(() => {window.DeviceViewerReference.componentFn();});"></p>' +
   '<p> <strong>{PLATE}: </strong>$plate</p>' +
   '<p> <strong>{VEHICLE}: </strong>$serial</p>' +
   '<p> <strong>{GROUPNAME}: </strong>$groupName</p>' +
   '<p align="right"> $lastLocationTimestamp </p>' +
   '<p align="right"> <strong> {LAST_LOCATION_TIMESTAMP} </strong> </p>' +
-//  '<input type="button" name="Edit" value="{SEE_MORE}" onclick="window.angularComponentReference.zone.run(() => {window.angularComponentReference.componentFn(\'test\');});">' +
-  '<div style="display:inline-block"><p align="right"> <input type="button" name="Edit" value="{SEE_MORE}" onclick="window.angularComponentReference.zone.run(() => {window.angularComponentReference.componentFn(\'test\');});">' +  
+  //  '<input type="button" name="Edit" value="{SEE_MORE}" onclick="window.angularComponentReference.zone.run(() => {window.angularComponentReference.componentFn(\'test\');});">' +
+  '<div style="display:inline-block"><p align="right"> <input type="button" name="Edit" value="{SEE_MORE}" onclick="window.angularComponentReference.zone.run(() => {window.angularComponentReference.componentFn(\'test\');});">' +
   //'<a href="#" type="button" onclick="window.angularComponentReference.zone.run(() => {window.angularComponentReference.componentFn(\'test\');});">{TITLE}</a>' +
   //'">'+
   '</div></body></html>';

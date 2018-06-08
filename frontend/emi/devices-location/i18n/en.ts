@@ -6,7 +6,9 @@ export const locale = {
           'DEVICE_GROUP_PLACEHOLDER': 'Device groups',
           'DEVICES_PLACEHOLDER': 'Devices',
           'SELECT_DEVICE_GROUP': 'Select a device group',
-          'DEVICE_VIEWER_DIALOG_CLOSE': 'Close'
+          'DEVICE_VIEWER_DIALOG_CLOSE': 'Close',
+          'VEHICLES_NOT_FOUND_ON_GROUPNAME': 'No vehicles found in the indicated group name',
+          'SNACK_BAR_CLOSE': 'Close'
       },
       MARKER: {
         INFOWINDOW: {
@@ -18,6 +20,13 @@ export const locale = {
           SEE_MORE: 'See more...',
           FOLLOW: 'Follow vehicle'
         }
+      },
+      OPTION_PANEL:{
+        SHOW_DISCONNECTED_DEVICE: 'Show disconnected devices',
+        HIDE_DISCONNECTED_DEVICE: 'Hide disconnected devices',
+        FIT_ZOOM_MARKERS: 'Center and fit zoom',
+        SHOW_ROUTE_PATH: 'Show traveled route',
+        HIDE_ROUTE_PATH: 'Hide traveled route'
       }
   }
 };

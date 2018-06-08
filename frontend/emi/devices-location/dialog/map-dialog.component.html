@@ -3,8 +3,28 @@
 </div>
 <div mat-dialog-content style="padding: 0px; overflow:hidden;">
   <div #vehicleViewer style="width: 399px; height: 305px;padding: 0px; overflow:hidden;">
-  </div>      
+  </div>    
+
 </div>
 <div mat-dialog-actions>
-      <button mat-raised-button color="accent" style="width: 100%" (click)="closeDialog()">{{ 'LOCATION.DEVICE_VIEWER_DIALOG_CLOSE' | translate }}</button>
+      
+          
+          <button mat-raised-button color="accent" (click)="centerMap()" style="width: 35%" matTooltip="{{ 'OPTION_PANEL.FIT_ZOOM_MARKERS' | translate }}">
+            <mat-icon aria-label="Center map">zoom_out_map</mat-icon>
+          </button>
+        
+          <button mat-raised-button color="primary" (click)="showAndHideRoutePath()" style="width: 35%" *ngIf="!showRoutePath" matTooltip="{{ 'OPTION_PANEL.SHOW_ROUTE_PATH' | translate }}">
+              <mat-icon aria-label="Show and hide lines">show_chart</mat-icon>
+          </button>
+
+          <button mat-raised-button color="accent" (click)="showAndHideRoutePath()" style="width: 35%" *ngIf="showRoutePath" matTooltip="{{ 'OPTION_PANEL.HIDE_ROUTE_PATH' | translate }}">
+              <mat-icon aria-label="Show and hide lines">show_chart</mat-icon>
+          </button>
+
+          <button mat-raised-button color="accent" style="width: 17%" (click)="closeDialog()">{{ 'LOCATION.DEVICE_VIEWER_DIALOG_CLOSE' | translate }}</button>
+          
+          <button mat-mini-fab (click)="showAndHideRoutePath()" *ngIf="false">
+            <mat-icon aria-label="Show/hide route path">linear_scale</mat-icon>
+          </button>
+   
 </div>
