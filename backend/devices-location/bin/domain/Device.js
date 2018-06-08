@@ -222,7 +222,7 @@ class Device {
             return deviceLocationReportedEvent;
         }).mergeMap(formattedLoc => {
             console.log('updateDevice MATERIALIZED_VIEW_TOPIC');
-            broker.send$(MATERIALIZED_VIEW_TOPIC, 'deviceLocationEvent', formattedLoc);
+            return broker.send$(MATERIALIZED_VIEW_TOPIC, 'deviceLocationEvent', formattedLoc);
         });
     }
 
