@@ -124,6 +124,8 @@ export class MarkerRef extends google.maps.Marker {
       newIconUrl = "./assets/devices-location/busOffline.svg";
     }
 
+    console.log("Icon: ", newIconUrl, (newIconUrl != this.iconUrl));
+
     //We only upodate the icon if it had changed.
     if (newIconUrl != this.iconUrl) {
       this.iconUrl = newIconUrl;

@@ -187,6 +187,7 @@ class Device {
             obs,
             this.updateDevice$(deviceData, authToken)
         )
+        .do(result => console.log('------------------ UpdateDeviceData ', JSON.stringify(result)));
         //return this.updateDevice$(deviceData, authToken);
     }
 
@@ -219,7 +220,10 @@ class Device {
                 locationPath: historicalDeviceLocation
             }
             return deviceLocationReportedEvent;
-        }).mergeMap(formattedLoc => broker.send$(MATERIALIZED_VIEW_TOPIC, 'deviceLocationEvent', formattedLoc));
+        }).mergeMap(formattedLoc => {
+            console.log('updateDevice MATERIALIZED_VIEW_TOPIC');
+            broker.send$(MATERIALIZED_VIEW_TOPIC, 'deviceLocationEvent', formattedLoc);
+        });
     }
 
     /**

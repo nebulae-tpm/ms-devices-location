@@ -267,6 +267,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
         return this.manageMarkers(deviceLocation.data.deviceLocationEvent);
       }),
     ).subscribe(([marker, deviceLocation]) => {
+      console.log('createDeviceLocationSubscription ', deviceLocation);
       if(this.selectedDeviceGroup && deviceLocation.groupName != this.selectedDeviceGroup){
         console.log('this.selectedDeviceGroup ==> ', this.selectedDeviceGroup);
         console.log('deviceLocation.groupName ==> ', deviceLocation.groupName);
