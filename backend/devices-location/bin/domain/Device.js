@@ -103,7 +103,7 @@ class Device {
      * @param {*} evt Event of the device
      * @param {*} authToken Auth token
      */
-    updateDeviceAlarmsState$(evt, authToken) {
+    updateDeviceAlarmsState$(evt, authToken) {        
         let deviceData;
         switch (evt.et) {
             case 'DeviceRamuUsageAlarmActivated':
@@ -147,15 +147,14 @@ class Device {
                 }
                 break;
             case 'DeviceConnected':
+                console.log('1 - UpdateDeviceAlarmState: ', JSON.stringify(evt));
                 deviceData = {
                     online: evt.data.connected
                 }
                 break;
-            // case 'DeviceDisconnected':
-            //     deviceData = {
-            //         online: false
-            //     }
-            //     break;
+            case 'DeviceDisconnected':
+                console.log('2 - UpdateDeviceAlarmState: ', JSON.stringify(evt));
+                return Rx.Observable.empty();
             default:
                 return Rx.Observable.empty();
         }
