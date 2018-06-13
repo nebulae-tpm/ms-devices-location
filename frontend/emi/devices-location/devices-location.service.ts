@@ -33,15 +33,15 @@ export class DevicesLocationService {
           groupName: groupName,
           limit: limit
         },
-        errorPolicy: 'all'
+        //errorPolicy: 'all'
       });
   }
 
   /**
    * Gets the devices with its current location and location path (Historial device location)
-   * @param filterText 
-   * @param groupName 
-   * @param limit 
+   * @param filterText
+   * @param groupName
+   * @param limit
    */
   getDevicesLocationWithLocationPath(filterText: String): Observable<any> {
     return this.gateway.apollo
@@ -51,7 +51,7 @@ export class DevicesLocationService {
           filterText: filterText,
           limit: 1
         },
-        errorPolicy: 'all'
+        //errorPolicy: 'all'
       });
     }
 
@@ -59,7 +59,7 @@ export class DevicesLocationService {
     return this.gateway.apollo
       .query<any>({
         query: getDeviceGroups,
-        errorPolicy: 'all'
+        //errorPolicy: 'all'
       });
   }
 
