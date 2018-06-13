@@ -33,6 +33,7 @@ export class DevicesLocationService {
           groupName: groupName,
           limit: limit
         },
+        errorPolicy: 'all'
       });
   }
 
@@ -50,13 +51,15 @@ export class DevicesLocationService {
           filterText: filterText,
           limit: 1
         },
+        errorPolicy: 'all'
       });
     }
 
   getDeviceGroups(): Observable<any> {
     return this.gateway.apollo
       .query<any>({
-        query: getDeviceGroups
+        query: getDeviceGroups,
+        errorPolicy: 'all'
       });
   }
 

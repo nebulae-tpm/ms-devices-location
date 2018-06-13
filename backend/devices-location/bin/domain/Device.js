@@ -6,12 +6,24 @@ const HistoricalDeviceLocationDA = require('../data/HistoricalDeviceLocationDA')
 const DeviceGroupDA = require('../data/DeviceGroupDA');
 const broker = require('../tools/broker/BrokerFactory')();
 const MATERIALIZED_VIEW_TOPIC = "materialized-view-updates";
+const { CustomError, DefaultError } = require('../tools/CustomError');
 const HISTORICAL_DEVICE_LOCATION_QUANTITY = 90;
 
 let instance;
 
 class Device {
     constructor() {
+        this.materializedViewsEventEmitted$ = new Rx.Subject();
+
+        this.materializedViewsEventEmitted$
+            .groupBy(device => device.id)
+            .mergeMap(group$ => group$.debounceTime(2000))
+            .mergeMap(device => this.sendDeviceEvent$(device))
+            .subscribe(
+                (result) => {},
+                (err) => { console.log(err) },
+                () => { }
+            );
     }
 
     /**
@@ -19,13 +31,19 @@ class Device {
      * @param {*} param0 
      * @param {*} authToken 
      */
-    getDevices$({ root, args, jwt }, authToken) {
+    getDevices$({ root, args, jwt, fieldASTs }, authToken) {
+        const requestedFields = this.getProjection(fieldASTs);  
+        
+        console.log('requestedFields ', requestedFields);
+        
         return DeviceDA.getDevices$(args.filterText, args.groupName, args.limit)
             //.mergeMap(devicesLocations => Rx.Observable.from(devicesLocations))
             .concatMap(device =>
                 Rx.Observable.forkJoin(
                     Rx.Observable.of(device),
-                    HistoricalDeviceLocationDA.getLastHistoricalDeviceLocationPathById$(device.id, HISTORICAL_DEVICE_LOCATION_QUANTITY)
+                    (requestedFields.locationPath ? 
+                    HistoricalDeviceLocationDA.getLastHistoricalDeviceLocationPathById$(device.id, HISTORICAL_DEVICE_LOCATION_QUANTITY):
+                    Rx.Observable.of(undefined))
                 )
             )
             .map(([deviceLocation, historicalDeviceLocation]) => {
@@ -48,7 +66,12 @@ class Device {
                 }
                 return deviceLocationEvent;
             })
-            .toArray();
+            .toArray()
+            .mergeMap(rawResponse => this.buildSuccessResponse$(rawResponse))
+            .catch(err => {
+                return this.errorHandler$(err);
+            })
+            .do(val => console.log('RESULT ===================> ', val));
     }
 
     /**
@@ -153,14 +176,16 @@ class Device {
                 }
                 break;
             case 'DeviceDisconnected':
-                console.log('2 - UpdateDeviceAlarmState: ', JSON.stringify(evt));
                 return Rx.Observable.empty();
             default:
                 return Rx.Observable.empty();
         }
 
         deviceData['id'] = evt.aid;
-        return this.updateDevice$(deviceData, authToken);
+
+        return Rx.Observable.of(deviceData)
+        .mergeMap(device => DeviceDA.updateDeviceData$(device.id, device))
+        .do(device => this.materializedViewsEventEmitted$.next(device));
     }
 
     /**
@@ -171,35 +196,29 @@ class Device {
     updateDeviceData$(deviceDeviceState, authToken) {
         let deviceData = {
             id: deviceDeviceState.aid, 
-            hostname: (deviceDeviceState.data.hostname ? deviceDeviceState.data.hostname: undefined), 
-            groupName: (deviceDeviceState.data.groupName ? deviceDeviceState.data.groupName: undefined), 
-            version: deviceDeviceState.etv };
+            hostname: (deviceDeviceState.data.hostname ? deviceDeviceState.data.hostname : undefined),
+            groupName: (deviceDeviceState.data.groupName ? deviceDeviceState.data.groupName : undefined),
+            version: deviceDeviceState.etv
+        };
         //Remove undefined values
         deviceData = JSON.parse(JSON.stringify(deviceData));
         
         let obs = Rx.Observable.of(undefined);
-        if(deviceDeviceState.data.groupName){
-            const deviceGroup = { name: deviceDeviceState.data.groupName};
+        if (deviceDeviceState.data.groupName) {
+            const deviceGroup = { name: deviceDeviceState.data.groupName };
             obs = DeviceGroupDA.updateDeviceGroup$(deviceGroup);
         }
 
-        return Rx.Observable.forkJoin(
-            obs,
-            this.updateDevice$(deviceData, authToken)
-        )
-        .do(result => console.log('------------------ UpdateDeviceData ', JSON.stringify(result)));
-        //return this.updateDevice$(deviceData, authToken);
+        return obs.mergeMap(val => DeviceDA.updateDeviceData$(deviceData.id, deviceData));
     }
 
     /**
-     * Updates the device data, If the device does not exist, a new device location is created without location.
+     * Gets the device and its device location history and send an event 
      * @param {*} data Device data (type, serial, hostname)
-     * @param {*} authToken Auth token
      */
-    updateDevice$(deviceData, authToken) {
-
+    sendDeviceEvent$(deviceData) {    
         return Rx.Observable.forkJoin(
-            DeviceDA.updateDeviceData$(deviceData.id, deviceData),
+            DeviceDA.getDeviceById$(deviceData.id),
             HistoricalDeviceLocationDA.getLastHistoricalDeviceLocationPathById$(deviceData.id, HISTORICAL_DEVICE_LOCATION_QUANTITY)
         ).map(([deviceLocation, historicalDeviceLocation]) => {
             const deviceLocationReportedEvent = {
@@ -221,7 +240,6 @@ class Device {
             }
             return deviceLocationReportedEvent;
         }).mergeMap(formattedLoc => {
-            console.log('updateDevice MATERIALIZED_VIEW_TOPIC');
             return broker.send$(MATERIALIZED_VIEW_TOPIC, 'deviceLocationEvent', formattedLoc);
         });
     }
@@ -232,7 +250,10 @@ class Device {
      * @param {*} authToken 
      */
     getDeviceGroups$({ root, args, jwt }, authToken) {
-        return DeviceGroupDA.getDeviceGroups$().toArray();
+        return DeviceGroupDA.getDeviceGroups$()
+        .toArray()
+        .mergeMap(rawResponse => this.buildSuccessResponse$(rawResponse))
+        .catch(err => this.errorHandler$(err));
     }
 
     /**
@@ -241,8 +262,8 @@ class Device {
      * @param {*} authToken 
      */
     updateDeviceGroup$(deviceDeviceState, authToken) {
-        if(deviceDeviceState.data.groupName){
-            const deviceGroup = { name: deviceDeviceState.data.groupName};
+        if (deviceDeviceState.data.groupName) {
+            const deviceGroup = { name: deviceDeviceState.data.groupName };
             return DeviceGroupDA.updateDeviceGroup$(deviceGroup);
         }
         return Rx.Observable.of(undefined);        
@@ -253,8 +274,7 @@ class Device {
      * @param {*} cleanDeviceLocationHistory 
      * @param {*} authToken 
      */
-    cleanDeviceLocationHistory$(cleanDeviceLocationHistory, authToken){
-        console.log('cleanDeviceLocationHistory => ', new Date());
+    cleanDeviceLocationHistory$(cleanDeviceLocationHistory, authToken) {
         return HistoricalDeviceLocationDA.removeHistoricalDeviceLocation$(cleanDeviceLocationHistory);
     }
 
@@ -263,7 +283,7 @@ class Device {
      * @param {*} cleanDeviceLocationHistory 
      * @param {*} authToken 
      */
-    cleanGroupNames$(cleanDeviceGroupNames, authToken){
+    cleanGroupNames$(cleanDeviceGroupNames, authToken) {
         console.log('cleanGroupNames => ', new Date());
         return DeviceDA.getGroupnamesFromAllDevices$()
         .mergeMap(groupNames => Rx.Observable.from(groupNames))
@@ -272,6 +292,58 @@ class Device {
         .mergeMap(groupNames => DeviceGroupDA.removeAllGroupNamesExceptInArray$(groupNames));
     }
 
+    /**
+     * Builds the response structure to send through GraphQL
+     * @param {*} rawResponse 
+     */
+    buildSuccessResponse$(rawResponse) {
+        return Rx.Observable.of(rawResponse).map(resp => {
+          return {
+            data: resp,
+            result: {
+              code: 200
+            }
+          };
+        });
+    }
+
+    /**
+     * Builds the error response 
+     * @param {*} err 
+     */
+    errorHandler$(err) {
+        return Rx.Observable.of(err).map(err => {
+          const exception = { data: null, result: {} };
+          if (err instanceof CustomError) {
+            exception.result = {
+              code: err.code,
+              error: err.getContent()
+            };
+          } else {
+            const defaultError = new DefaultError(err.message);
+            exception.result = {
+              code: defaultError.code,
+              error: {
+                name: 'Error',
+                code: defaultError.code,
+                msg: defaultError.getContent()
+              }
+            };
+          }
+          return exception;
+        });
+    }
+
+    /**
+     * Gets the fields requested through Graphql
+     * @param {*} fieldASTs 
+     */
+    getProjection (fieldASTs) {
+        return fieldASTs.fieldNodes[0].selectionSet.selections.reduce((projections, selection) => {
+          projections[selection.name.value] = true;
+          return projections;
+        }, {});
+    }
 }
 
 module.exports = () => {

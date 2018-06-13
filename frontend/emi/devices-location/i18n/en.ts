@@ -8,6 +8,7 @@ export const locale = {
           'SELECT_DEVICE_GROUP': 'Select a device group',
           'DEVICE_VIEWER_DIALOG_CLOSE': 'Close',
           'VEHICLES_NOT_FOUND_ON_GROUPNAME': 'No vehicles found in the indicated group name',
+          'VEHICLE_NOT_FOUND': 'Vehicle not found',
           'SNACK_BAR_CLOSE': 'Close'
       },
       MARKER: {
@@ -27,6 +28,9 @@ export const locale = {
         FIT_ZOOM_MARKERS: 'Center and fit zoom',
         SHOW_ROUTE_PATH: 'Show traveled route',
         HIDE_ROUTE_PATH: 'Hide traveled route'
+      },
+      ERRORS: {
+        13001: 'internal server error'
       }
   }
 };

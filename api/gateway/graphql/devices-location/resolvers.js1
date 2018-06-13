@@ -15,6 +15,7 @@ module.exports = {
           { root, args, jwt: context.encodedToken },
           2000
         )
+        
         .toPromise();
     },
     getDeviceGroups(root, args, context) {

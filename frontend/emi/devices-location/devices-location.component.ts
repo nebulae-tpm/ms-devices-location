@@ -164,6 +164,8 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     return this.devicesLocationService
       .getDevicesLocationByFilter(filterText, groupName, limit)
       .pipe(
+        mergeMap(resp => this.graphQlAlarmsErrorHandler$(resp)),
+        filter(resp => !resp.errors),
         mergeMap(devicesLocation => Observable.from(devicesLocation.data.getDevicesLocation)),
         toArray()
       );
@@ -178,6 +180,10 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
         this.map.setCenter(marker.getPosition());
         this.map.fitBounds(this.bounds);
         this.onMarkerClick(marker, null);
+      }, error => {}, () => {
+        if(!this.selectedMarker){
+          this.showMessageSnackbar('LOCATION.VEHICLE_NOT_FOUND');
+        }        
       });
   }
 
@@ -187,7 +193,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
    * Clears the current marker clusterer
    */
   clearMarkerClusterer(){
-    if(this.markerClusterer ){
+    if(this.markerClusterer){
       this.markerClusterer.clearMarkers();
     }
   }
@@ -204,10 +210,26 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     }
   }
 
+  graphQlAlarmsErrorHandler$(response){
+    return Rx.Observable.of(JSON.parse(JSON.stringify(response)))
+    .pipe(
+      tap(resp => {
+        if (resp.errors){
+          this.showMessageSnackbar('ERRORS.'+resp.errors[0].message.code);
+          
+          resp.data.getDevicesLocation = []
+          return resp;
+        }
+      })
+    )
+  }
+
   refreshDeviceLocationQuery(filterText: String, groupName: String, firstTime: Boolean = false) {
     this.deviceLocationQuerySubscription = this.devicesLocationService
       .getDevicesLocationByFilter(filterText, groupName, undefined)
       .pipe(
+        mergeMap(resp => this.graphQlAlarmsErrorHandler$(resp)),
+        filter(resp => !resp.errors),
         mergeMap(devicesLocation => Observable.from(devicesLocation.data.getDevicesLocation)),
         mergeMap((deviceLocation: any) => {
           return this.manageMarkers(deviceLocation);
@@ -234,17 +256,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
         error => console.error(error),
         () => {
           if(this.markers && this.markers.length == 0){
-            this.translate.get(['LOCATION.VEHICLES_NOT_FOUND_ON_GROUPNAME', 'LOCATION.SNACK_BAR_CLOSE'])
-            .subscribe(translationData => {
-                this.snackBar.open(
-                  translationData['LOCATION.VEHICLES_NOT_FOUND_ON_GROUPNAME'],
-                  translationData['LOCATION.SNACK_BAR_CLOSE'],
-                  {
-                    duration: 2000
-                  }
-                );
-              }
-            );
+            this.showMessageSnackbar('LOCATION.VEHICLES_NOT_FOUND_ON_GROUPNAME', 'LOCATION.SNACK_BAR_CLOSE');
           }else{
             this.adjustZoomAccordingToTheMarkers();
             if(firstTime && this.selectedDeviceSerial){
@@ -512,6 +524,9 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Opens a device viewer dialog, this dialog shows information about the selected vehicle
+   */
   openDeviceViewerDialog(): void {
     const dialogConfig = new MatDialogConfig();
     dialogConfig.hasBackdrop = false;
@@ -520,6 +535,33 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     dialogConfig.data = { followedMarkerId: this.selectedMarker.vehicle.serial };
 
     let dialogRef = this.dialog.open(MapDialogComponent, dialogConfig);
+  }
+
+    /**
+   * Shows a message snackbar on the bottom of the page
+   * @param messageKey Key of the message to i18n
+   * @param detailMessageKey Key of the detail message to i18n
+   */
+  showMessageSnackbar(messageKey, detailMessageKey?){
+    let translationData = [];
+    if(messageKey){
+      translationData.push(messageKey);
+    }
+
+    if(detailMessageKey){
+      translationData.push(detailMessageKey);
+    }
+
+    this.translate.get(translationData) 
+    .subscribe(data => {
+      this.snackBar.open(
+        messageKey ? data[messageKey]: '',
+        detailMessageKey ? data[detailMessageKey]: '',
+        {
+          duration: 2000
+        }
+      );
+    });
   }
 
   /**

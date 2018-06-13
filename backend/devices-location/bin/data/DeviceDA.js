@@ -24,6 +24,10 @@ class DeviceDA {
      * @param {string} type 
      */
     static getDevices$(filterText, groupName, limit) {
+        // if(true){            
+        //      return Rx.Observable.throw(new Error('Error'));
+        // } 
+
         let filter = {};
         if(filterText){
             filter['$or'] = [ { id: {$regex: filterText, $options: 'i'} }, { hostname: {$regex: filterText, $options: 'i'} } ];

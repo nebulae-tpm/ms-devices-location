@@ -1,4 +1,5 @@
 import { LocationPath } from './../entities/markerRef';
+import {MatSnackBar} from '@angular/material';
 import { DevicesLocationService } from './../devices-location.service';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { DatePipe } from '@angular/common';
@@ -40,7 +41,7 @@ export class MapDialogComponent implements OnInit, OnDestroy {
   @ViewChild("vehicleViewer") gmapElement: any;
 
   constructor(public dialogRef: MatDialogRef<MapDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: any,
-    private devicesLocationService: DevicesLocationService, private datePipe: DatePipe,
+    private devicesLocationService: DevicesLocationService, private datePipe: DatePipe,  public snackBar: MatSnackBar,
     private translate: TranslateService, private translationLoader: FuseTranslationLoaderService) {
     this.followedMarkerId = data.followedMarkerId;
   }
@@ -225,6 +226,48 @@ export class MapDialogComponent implements OnInit, OnDestroy {
         return marker;
       })
   }
+
+  graphQlAlarmsErrorHandler$(response){
+    return Rx.Observable.of(JSON.parse(JSON.stringify(response)))
+    .pipe(
+      tap(resp => {
+        if (resp.errors){
+          this.showMessageSnackbar('ERRORS.'+resp.errors[0].message.code);
+          
+          resp.data.getDevicesLocation = []
+          return resp;
+        }
+      })
+    )
+  }
+
+      /**
+   * Shows a message snackbar on the bottom of the page
+   * @param messageKey Key of the message to i18n
+   * @param detailMessageKey Key of the detail message to i18n
+   */
+  showMessageSnackbar(messageKey, detailMessageKey?){
+    let translationData = [];
+    if(messageKey){
+      translationData.push(messageKey);
+    }
+
+    if(detailMessageKey){
+      translationData.push(detailMessageKey);
+    }
+
+    this.translate.get(translationData) 
+    .subscribe(data => {
+      this.snackBar.open(
+        messageKey ? data[messageKey]: '',
+        detailMessageKey ? data[detailMessageKey]: '',
+        {
+          duration: 2000
+        }
+      );
+    });
+  }
+
 
   addMarkerToMap(marker: MarkerRef) {
     marker.inizialiteEvents();

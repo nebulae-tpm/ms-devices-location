@@ -1,7 +1,10 @@
+const INTERNAL_SERVER_ERROR = 13001;
+
 /**
  * class to emcapsulute diferent errors.
  */
 class CustomError extends Error {
+
     constructor(name, method, code, message) {
       super(message); 
       this.code = code;
@@ -20,6 +23,22 @@ class CustomError extends Error {
     }
   }
 
-  module.exports =  { 
-    CustomError 
+class DefaultError extends Error{
+    constructor(message){
+      super(message)
+      this.code = INTERNAL_SERVER_ERROR;
+      this.msg = message;
+    }
+
+    getContent(){
+      return {
+        code: this.code,
+        msg: this.msg
+      }
+    }
+}
+
+  module.exports =  {
+    CustomError, 
+    DefaultError
   } 
