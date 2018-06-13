@@ -6,16 +6,16 @@ const Rx = require('rxjs');
 
 module.exports = {
   Query: {
-    getDevicesLocation(root, args, context) {
+    getDevicesLocation(root, args, context, fieldASTs) {
       console.log('Graphql query getDevicesLocation ', new Date());
       return broker
         .forwardAndGetReply$(
           'Device',
           'gateway.graphql.query.getDevicesLocation',
-          { root, args, jwt: context.encodedToken },
+          { root, args, jwt: context.encodedToken, fieldASTs },
           2000
         )
-        
+        .mergeMap(response => getReponseFromBackEnd$(response))
         .toPromise();
     },
     getDeviceGroups(root, args, context) {
@@ -27,6 +27,7 @@ module.exports = {
           { root, args, jwt: context.encodedToken },
           2000
         )
+        .mergeMap(response => getReponseFromBackEnd$(response))
         .toPromise();
     }
   },
@@ -46,8 +47,23 @@ module.exports = {
   },
 }
 
+function getReponseFromBackEnd$(response) {
+  return Rx.Observable.of(response)
+    .map(resp => {
+      if (resp.result.code != 200) {
+        const err = new Error();
+        err.name = 'Error';
+        err.message = resp.result.error;
+        Error.captureStackTrace(err, 'Error');
+        throw err;
+      }
+      return resp.data;
+    });
+}
+
 broker.getMaterializedViewsUpdates$(['deviceLocationEvent']).subscribe(
   evt => {
+    console.log("Subscription response1 => ", evt);
     pubsub.publish('deviceLocationEvent', { deviceLocationEvent: evt.data });
   },
   (error) => console.error('Error listening deviceLocationEvent', error),

@@ -32,10 +32,7 @@ class Device {
      * @param {*} authToken 
      */
     getDevices$({ root, args, jwt, fieldASTs }, authToken) {
-        const requestedFields = this.getProjection(fieldASTs);  
-        
-        console.log('requestedFields ', requestedFields);
-        
+        const requestedFields = this.getProjection(fieldASTs);          
         return DeviceDA.getDevices$(args.filterText, args.groupName, args.limit)
             //.mergeMap(devicesLocations => Rx.Observable.from(devicesLocations))
             .concatMap(device =>

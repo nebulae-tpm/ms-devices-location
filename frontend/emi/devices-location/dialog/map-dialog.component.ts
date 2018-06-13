@@ -133,6 +133,7 @@ export class MapDialogComponent implements OnInit, OnDestroy {
       },
         error => console.error(error),
         () => {
+          
           // this.map.fitBounds(this.bounds);
           // this.map.panToBounds(this.bounds);
           this.map.setCenter(this.marker.getPosition())

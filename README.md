@@ -74,6 +74,10 @@ Event fired when a device is modified or when a device reports information about
 
 **ids:** Indicates the IDs of the devices of which you want to receive events. If no IDs are specified, all the devices will be listened.
 
+### GraphQL Mutations
+
+N/A
+
 # BackEnd <a name="backend"></a>
 Backends are defined processes within a docker container.  
 Each process is responsible to build, run and maintain itself.  

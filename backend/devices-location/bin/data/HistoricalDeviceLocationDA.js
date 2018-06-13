@@ -25,7 +25,6 @@ class HistoricalDeviceLocationDA {
      * @param {*} count quantity of elements to return
      */
     static getLastHistoricalDeviceLocationPathById$(id, count) {  
-        console.log('Consulta HISTORICO LOCATION');      
         const jsonProjection = {_id:0, "loc.geojson.coordinates":1,"timestamp":1} ;        
         const sort = {"timestamp": -1} ;
         const collection = mongoDB.db.collection(collectionName);
