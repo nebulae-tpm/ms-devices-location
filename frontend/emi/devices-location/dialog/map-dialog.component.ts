@@ -1,7 +1,6 @@
-import { LocationPath } from './../entities/markerRef';
 import {MatSnackBar} from '@angular/material';
 import { DevicesLocationService } from './../devices-location.service';
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { DatePipe } from '@angular/common';
 import { MapRef } from "../entities/agmMapRef";
 import { MarkerRef, MarkerRefInfoWindowContent, MarkerRefTitleContent } from "../entities/markerRef";
@@ -17,7 +16,7 @@ import {
 import * as Rx from "rxjs/Rx";
 import { Subscription } from 'rxjs/Subscription';
 import { Observable } from 'rxjs/Observable';
-import { toArray, tap, mergeMap, filter, map, first } from 'rxjs/operators';
+import { tap, mergeMap, filter, first } from 'rxjs/operators';
 import { FuseTranslationLoaderService } from "../../../../core/services/translation-loader.service";
 import { TranslateService } from "@ngx-translate/core";
 
@@ -72,7 +71,7 @@ export class MapDialogComponent implements OnInit, OnDestroy {
 
   /**
    * get the device data, its current location and location path according to the filter
-   * @param filterText 
+   * @param filterText
    */
   getDeviceLocationQuery(filterText: String, groupName: String, firstTime: Boolean = false) {
     this.bounds = new google.maps.LatLngBounds();
@@ -133,9 +132,6 @@ export class MapDialogComponent implements OnInit, OnDestroy {
       },
         error => console.error(error),
         () => {
-          
-          // this.map.fitBounds(this.bounds);
-          // this.map.panToBounds(this.bounds);
           this.map.setCenter(this.marker.getPosition())
         });
   }
@@ -175,8 +171,6 @@ export class MapDialogComponent implements OnInit, OnDestroy {
           deviceLocation.online, true);
         marker.updateRoutePath(this.map, deviceLocation.locationPath);
       }
-      //this.map.setCenter(new google.maps.LatLng(deviceLocation.currentLocation.lat, deviceLocation.currentLocation.lng));
-
     });
   }
 
@@ -234,7 +228,7 @@ export class MapDialogComponent implements OnInit, OnDestroy {
       tap(resp => {
         if (resp.errors){
           this.showMessageSnackbar('ERRORS.'+resp.errors[0].message.code);
-          
+
           resp.data.getDevicesLocation = []
           return resp;
         }
@@ -257,7 +251,7 @@ export class MapDialogComponent implements OnInit, OnDestroy {
       translationData.push(detailMessageKey);
     }
 
-    this.translate.get(translationData) 
+    this.translate.get(translationData)
     .subscribe(data => {
       this.snackBar.open(
         messageKey ? data[messageKey]: '',

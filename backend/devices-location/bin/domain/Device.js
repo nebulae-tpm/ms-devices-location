@@ -67,8 +67,7 @@ class Device {
             .mergeMap(rawResponse => this.buildSuccessResponse$(rawResponse))
             .catch(err => {
                 return this.errorHandler$(err);
-            })
-            .do(val => console.log('RESULT ===================> ', val));
+            });
     }
 
     /**
@@ -167,7 +166,6 @@ class Device {
                 }
                 break;
             case 'DeviceConnected':
-                console.log('1 - UpdateDeviceAlarmState: ', JSON.stringify(evt));
                 deviceData = {
                     online: evt.data.connected
                 }
@@ -206,7 +204,8 @@ class Device {
             obs = DeviceGroupDA.updateDeviceGroup$(deviceGroup);
         }
 
-        return obs.mergeMap(val => DeviceDA.updateDeviceData$(deviceData.id, deviceData));
+        return obs.mergeMap(val => DeviceDA.updateDeviceData$(deviceData.id, deviceData))
+        .do(device => this.materializedViewsEventEmitted$.next(device));
     }
 
     /**
@@ -281,7 +280,6 @@ class Device {
      * @param {*} authToken 
      */
     cleanGroupNames$(cleanDeviceGroupNames, authToken) {
-        console.log('cleanGroupNames => ', new Date());
         return DeviceDA.getGroupnamesFromAllDevices$()
         .mergeMap(groupNames => Rx.Observable.from(groupNames))
         .pluck('groupName')

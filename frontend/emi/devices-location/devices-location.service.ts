@@ -7,9 +7,7 @@ import {
 import { GatewayService } from '../../../api/gateway.service';
 import { Observable } from 'rxjs/Observable';
 import { HttpClient } from '@angular/common/http';
-import * as Rx from 'rxjs';
 import { getDevicesLocation, getDevicesLocationWithLocationPath, deviceLocationEvent, deviceLocationWithLocationPathEvent, getDeviceGroups } from './gql/DevicesLocationGql';
-import { map } from 'rxjs/operator/map';
 
 @Injectable()
 export class DevicesLocationService {
@@ -51,7 +49,7 @@ export class DevicesLocationService {
           filterText: filterText,
           limit: 1
         },
-        //errorPolicy: 'all'
+        errorPolicy: 'all'
       });
     }
 
@@ -59,7 +57,7 @@ export class DevicesLocationService {
     return this.gateway.apollo
       .query<any>({
         query: getDeviceGroups,
-        //errorPolicy: 'all'
+        errorPolicy: 'all'
       });
   }
 

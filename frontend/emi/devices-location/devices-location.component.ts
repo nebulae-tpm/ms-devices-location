@@ -14,9 +14,6 @@ import {
   ViewChild,
   OnDestroy,
   ElementRef,
-  SimpleChanges,
-  OnChanges,
-  Inject,
   NgZone
 } from "@angular/core";
 import { } from "google-maps";
@@ -29,11 +26,8 @@ import { locale as english } from './i18n/en';
 import { locale as spanish } from './i18n/es';
 import { FuseTranslationLoaderService } from "../../../core/services/translation-loader.service";
 import { TranslateService } from "@ngx-translate/core";
-import { toArray, tap, mergeMap, filter, map, defaultIfEmpty, first } from 'rxjs/operators';
-import { startWith } from 'rxjs/operators/startWith';
-import { distinctUntilChanged } from 'rxjs/operators/distinctUntilChanged';
+import { toArray, tap, mergeMap, filter, map, defaultIfEmpty, first, debounceTime , distinctUntilChanged, startWith} from 'rxjs/operators';
 import { MatDialog, MatDialogConfig, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
-import { debounceTime } from 'rxjs/operators/debounceTime';
 
 @Component({
   selector: "devices-location",
@@ -183,11 +177,11 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
       }, error => {}, () => {
         if(!this.selectedMarker){
           this.showMessageSnackbar('LOCATION.VEHICLE_NOT_FOUND');
-        }        
+        }
       });
   }
 
-  
+
 
   /**
    * Clears the current marker clusterer
@@ -213,10 +207,10 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
   graphQlAlarmsErrorHandler$(response){
     return Rx.Observable.of(JSON.parse(JSON.stringify(response)))
     .pipe(
-      tap(resp => {
+      tap((resp: any) => {
         if (resp.errors){
           this.showMessageSnackbar('ERRORS.'+resp.errors[0].message.code);
-          
+
           resp.data.getDevicesLocation = []
           return resp;
         }
@@ -229,7 +223,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
       .getDevicesLocationByFilter(filterText, groupName, undefined)
       .pipe(
         mergeMap(resp => this.graphQlAlarmsErrorHandler$(resp)),
-        filter(resp => !resp.errors),
+        filter((resp: any) => !resp.errors),
         mergeMap(devicesLocation => Observable.from(devicesLocation.data.getDevicesLocation)),
         mergeMap((deviceLocation: any) => {
           return this.manageMarkers(deviceLocation);
@@ -438,6 +432,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
         if(deviceLocation){
           marker.vehicle.serial = (deviceLocation.id ? deviceLocation.id + '' : '');
           marker.vehicle.groupName = (deviceLocation.groupName ? deviceLocation.groupName + '' : '');
+          marker.vehicle.plate = (deviceLocation.hostname ? deviceLocation.hostname + '' : '');
           marker.vehicle.cpuUsageAlarmActivated =(deviceLocation.cpuUsageAlarmActivated ? deviceLocation.cpuUsageAlarmActivated: false);
           marker.vehicle.ramUsageAlarmActivated =(deviceLocation.ramUsageAlarmActivated ? deviceLocation.ramUsageAlarmActivated: false);
           marker.vehicle.sdUsageAlarmActivated =(deviceLocation.sdUsageAlarmActivated ? deviceLocation.sdUsageAlarmActivated: false);
@@ -552,7 +547,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
       translationData.push(detailMessageKey);
     }
 
-    this.translate.get(translationData) 
+    this.translate.get(translationData)
     .subscribe(data => {
       this.snackBar.open(
         messageKey ? data[messageKey]: '',
