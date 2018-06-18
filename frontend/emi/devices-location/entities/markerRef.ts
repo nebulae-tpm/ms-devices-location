@@ -4,15 +4,15 @@ import { } from 'googlemaps';
 import { MapRef } from "./agmMapRef";
 
 export class Vehicle {
-  plate: '';
-  serial: '';
-  groupName: '';
-  lastLocationTimestamp: undefined;
-  cpuUsageAlarmActivated: false;
-  ramUsageAlarmActivated: false;
-  sdUsageAlarmActivated: false;
-  temperatureAlarmActivated: false;
-  online: false;
+  plate: string = '';
+  serial: string = '';
+  groupName: string = '';
+  lastLocationTimestamp: number = undefined;
+  cpuUsageAlarmActivated: boolean = false;
+  ramUsageAlarmActivated: boolean = false;
+  sdUsageAlarmActivated: boolean = false;
+  temperatureAlarmActivated: boolean = false;
+  online: boolean = false;
 }
 
 
@@ -124,7 +124,15 @@ export class MarkerRef extends google.maps.Marker {
       newIconUrl = "./assets/devices-location/busOffline.svg";
     }
 
-    console.log("Icon: ", newIconUrl, (newIconUrl != this.iconUrl), " Vehicle: ", this.vehicle.plate);
+    console.log(" Icon: ", newIconUrl, (newIconUrl != this.iconUrl), " Vehicle: ", this.vehicle);
+
+    // if(this.iconUrl == "./assets/devices-location/busOnline.svg"){
+    //   newIconUrl = "./assets/devices-location/busOffline.svg";
+    // }else if(this.iconUrl == "./assets/devices-location/busOffline.svg"){
+    //   newIconUrl = "./assets/devices-location/busAlarmed.svg";
+    // }else if(this.iconUrl == "./assets/devices-location/busAlarmed.svg"){
+    //   newIconUrl = "./assets/devices-location/busOnline.svg";
+    // }
 
     //We only upodate the icon if it had changed.
     if (newIconUrl != this.iconUrl) {

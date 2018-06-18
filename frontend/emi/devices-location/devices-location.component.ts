@@ -192,6 +192,43 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     }
   }
 
+  updateIconTest(){
+    const val = {"data": {"deviceLocationEvent": {"cpuUsageAlarmActivated": true, "groupName": "Cuenca 8", "hostname": "TPZ313", "id": "OMVZ7-0221", "online": true, "ramUsageAlarmActivated": false, "sdUsageAlarmActivated": false, "temperatureAlarmActivated": false, "currentLocation": {"lat": 6.190011983333333, "lng": -75.58242088333333, "timestamp": 1529358336526}}}};
+    Observable.of(val)
+    .pipe(
+      mergeMap(deviceLocation => {
+        return this.manageMarkers(deviceLocation.data.deviceLocationEvent);
+      }),
+    ).subscribe(([marker, deviceLocation]) => {
+      console.log('createDeviceLocationSubscription ', deviceLocation);
+      if(this.selectedDeviceGroup && deviceLocation.groupName != this.selectedDeviceGroup){
+        console.log('this.selectedDeviceGroup ==> ', this.selectedDeviceGroup);
+        console.log('deviceLocation.groupName ==> ', deviceLocation.groupName);
+        console.log('deviceLocation.groupName ==> ', (this.selectedDeviceGroup && deviceLocation.groupName != this.selectedDeviceGroup));
+        //return;
+      }
+
+      if (!this.isMarkerInArray(marker)) {
+        marker.setMap(this.map);
+        this.markerClusterer.addMarker(marker);
+        this.addMarkerToMap(marker);
+      } else {
+        marker.updateData(deviceLocation.currentLocation.lng,
+          deviceLocation.currentLocation.lat, 1000,
+          deviceLocation.currentLocation.timestamp,
+          deviceLocation.ramUsageAlarmActivated,
+          deviceLocation.sdUsageAlarmActivated,
+          deviceLocation.cpuUsageAlarmActivated,
+          deviceLocation.temperatureAlarmActivated,
+          deviceLocation.online, false);
+      }
+
+      this.repaintMarkerClusterer();
+      this.updateMarkerInfoContent(marker, deviceLocation).subscribe(val => {
+      });
+    });
+  }
+
   /**
    * Update markert clusterer
    */
@@ -201,6 +238,15 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
     if(this.markers && this.markers.length > 0){
       this.markerClusterer = new MarkerCluster(this.map, this.markers,
         {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});
+    }
+  }
+
+  /**
+   * Repaints the marker cluster
+   */
+  repaintMarkerClusterer(){
+    if (this.markerClusterer) {
+      this.markerClusterer.repaint();
     }
   }
 
@@ -283,6 +329,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
 
       if (!this.isMarkerInArray(marker)) {
         marker.setMap(this.map);
+        this.markerClusterer.addMarker(marker);
         this.addMarkerToMap(marker);
       } else {
         marker.updateData(deviceLocation.currentLocation.lng,
@@ -295,7 +342,7 @@ export class DevicesLocationComponent implements OnInit, OnDestroy {
           deviceLocation.online, false);
       }
 
-      this.updateMarkerClusterer();
+      this.repaintMarkerClusterer();
       this.updateMarkerInfoContent(marker, deviceLocation).subscribe(val => {
       });
     });
