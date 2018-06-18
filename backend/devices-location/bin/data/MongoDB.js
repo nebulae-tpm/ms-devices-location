@@ -51,7 +51,10 @@ class MongoDB {
         return Rx.Observable.create( async (observer) => {       
 
         observer.next('Creating index for DevicesLocation.DeviceLocation => ({id: 1, hostname: 1, groupName: 1, type: 1})  ');
-        await this.db.collection('DeviceLocation').createIndex( { id: 1, hostname: 1, groupName: 1, type: 1 });      
+        await this.db.collection('DeviceLocation').createIndex( { id: 1, hostname: 1, groupName: 1, type: 1 }); 
+        
+        observer.next('Creating index for DevicesLocation.deviceState => ({ id: 1 }, { unique : true })');
+        await this.db.collection('deviceState').createIndex( { id: 1 }, { unique : true });   
 
         observer.next('All indexes created');
         observer.complete();

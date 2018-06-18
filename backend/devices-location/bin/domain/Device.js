@@ -88,32 +88,10 @@ class Device {
                 }
                 return Rx.Observable.of(undefined);
             })
-            .mergeMap(updateDeviceData =>
-                Rx.Observable.forkJoin(
-                    updateDeviceData ? Rx.Observable.of(updateDeviceData) : DeviceDA.getDeviceById$(data.aid),
-                    HistoricalDeviceLocationDA.getLastHistoricalDeviceLocationPathById$(data.aid, HISTORICAL_DEVICE_LOCATION_QUANTITY)
-                )
+            .mergeMap(deviceData =>
+                deviceData ? Rx.Observable.of(deviceData) : DeviceDA.getDeviceById$(data.aid)
             )
-            .map(([deviceLocation, historicalDevicesLocation]) => {
-                const deviceLocationEvent = {
-                    id: deviceLocation.id,
-                    currentLocation: deviceLocation.loc ? {
-                        lng: deviceLocation.loc.geojson.coordinates[0],
-                        lat: deviceLocation.loc.geojson.coordinates[1],
-                        timestamp: deviceLocation.timestamp
-                    } : undefined,
-                    hostname: deviceLocation.hostname,
-                    groupName: deviceLocation.groupName,
-                    type: deviceLocation.type,
-                    ramUsageAlarmActivated: deviceLocation.ramUsageAlarmActivated,
-                    sdUsageAlarmActivated: deviceLocation.sdUsageAlarmActivated,
-                    cpuUsageAlarmActivated: deviceLocation.cpuUsageAlarmActivated,
-                    temperatureAlarmActivated: deviceLocation.temperatureAlarmActivated,
-                    online: deviceLocation.online,
-                    locationPath: historicalDevicesLocation
-                }
-                return deviceLocationEvent;
-            }).mergeMap(formattedLoc => broker.send$(MATERIALIZED_VIEW_TOPIC, 'deviceLocationEvent', formattedLoc));
+            .do(device => this.materializedViewsEventEmitted$.next(device));
     }
 
     /**
