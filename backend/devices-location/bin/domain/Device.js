@@ -38,7 +38,7 @@ class Device {
             .concatMap(device =>
                 Rx.Observable.forkJoin(
                     Rx.Observable.of(device),
-                    (requestedFields.locationPath ? 
+                    (requestedFields && requestedFields.locationPath ? 
                     HistoricalDeviceLocationDA.getLastHistoricalDeviceLocationPathById$(device.id, HISTORICAL_DEVICE_LOCATION_QUANTITY):
                     Rx.Observable.of(undefined))
                 )
@@ -334,6 +334,11 @@ class Device {
      * @param {*} fieldASTs 
      */
     getProjection (fieldASTs) {
+        if(!fieldASTs){
+            return undefined;
+        }
+
+        console.log('getProjection ==> ', fieldASTs);
         return fieldASTs.fieldNodes[0].selectionSet.selections.reduce((projections, selection) => {
           projections[selection.name.value] = true;
           return projections;
