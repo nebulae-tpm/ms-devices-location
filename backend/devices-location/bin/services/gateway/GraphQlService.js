@@ -27,7 +27,7 @@ class GraphQlService {
             () => console.log('GraphQlService incoming event subscription completed');
           };
 
-          console.log('GraphQl Service starting ...');
+          console.log('GraphQl Service starting ... ');
 
 
           return Rx.Observable.from(this.aggregateEventsArray)

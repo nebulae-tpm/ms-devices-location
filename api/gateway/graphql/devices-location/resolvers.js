@@ -15,7 +15,7 @@ module.exports = {
           { root, args, jwt: context.encodedToken, fieldASTs },
           2000
         )
-        .mergeMap(response => getReponseFromBackEnd$(response))
+        .mergeMap(response => getResponseFromBackEnd$(response))
         .toPromise();
     },
     getDeviceGroups(root, args, context) {
@@ -27,7 +27,7 @@ module.exports = {
           { root, args, jwt: context.encodedToken },
           2000
         )
-        .mergeMap(response => getReponseFromBackEnd$(response))
+        .mergeMap(response => getResponseFromBackEnd$(response))
         .toPromise();
     }
   },
@@ -47,7 +47,8 @@ module.exports = {
   },
 }
 
-function getReponseFromBackEnd$(response) {
+function getResponseFromBackEnd$(response) {
+  console.log('getResponseFromBackEnd');
   return Rx.Observable.of(response)
     .map(resp => {
       if (resp.result.code != 200) {
