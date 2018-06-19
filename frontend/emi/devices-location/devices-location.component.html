@@ -7,23 +7,23 @@
       <mat-icon class="icon s-24">search</mat-icon>
     </div>
     <mat-form-field class="w-45-p mt-12">
-      <input matInput placeholder="{{ 'LOCATION.DEVICES_PLACEHOLDER' | translate }}" aria-label="Devices" [matAutocomplete]="auto" [formControl]="deviceFilterCtrl">
+      <input matInput placeholder="{{ 'LOCATION.DEVICES_PLACEHOLDER' | translate }}" aria-label="Devices" [matAutocomplete]="auto"
+        [formControl]="deviceFilterCtrl">
       <mat-autocomplete #auto="matAutocomplete" (optionSelected)='getSelectedDevice($event.option.value)'>
-          <mat-option *ngFor="let filteredDevice of deviceLocationQueryFiltered$ | async" [value]="filteredDevice.id">
-            <img style="vertical-align:middle;" aria-hidden src="./assets/devices-location/bus2.svg" height="20" />
-            <span class="text-boxed text-uppercase">{{ filteredDevice.id }}</span>
-            <span class="text-boxed text-uppercase" *ngIf="filteredDevice.hostname">{{filteredDevice.hostname}}</span>
-            <span class="text-boxed text-uppercase" *ngIf="filteredDevice.groupName">{{filteredDevice.groupName}}</span>
-          </mat-option>
-        </mat-autocomplete>
+        <mat-option *ngFor="let filteredDevice of deviceLocationQueryFiltered$ | async" [value]="filteredDevice.id">
+          <img style="vertical-align:middle;" aria-hidden src="./assets/devices-location/bus2.svg" height="20" />
+          <span class="text-boxed text-uppercase">{{ filteredDevice.id }}</span>
+          <span class="text-boxed text-uppercase" *ngIf="filteredDevice.hostname">{{filteredDevice.hostname}}</span>
+          <span class="text-boxed text-uppercase" *ngIf="filteredDevice.groupName">{{filteredDevice.groupName}}</span>
+        </mat-option>
+      </mat-autocomplete>
     </mat-form-field>
 
     <div class="timeline" fxLayout="row" fxLayoutAlign="start center">
       <mat-icon class="icon s-24">timeline</mat-icon>
     </div>
     <mat-form-field class="w-45-p mt-12">
-      <mat-select placeholder="{{ 'LOCATION.DEVICE_GROUP_PLACEHOLDER' | translate }}" [(value)]="selectedDeviceGroup"
-      (change)="onDeviceGroupChanged($event.value)">
+      <mat-select placeholder="{{ 'LOCATION.DEVICE_GROUP_PLACEHOLDER' | translate }}" [(value)]="selectedDeviceGroup" (change)="onDeviceGroupChanged($event.value)">
         <mat-option>{{ 'LOCATION.SELECT_DEVICE_GROUP' | translate }}</mat-option>
         <mat-option *ngFor="let deviceGroup of deviceGroups$ | async" [value]="deviceGroup.name">
           {{deviceGroup.name}}
@@ -31,16 +31,28 @@
       </mat-select>
     </mat-form-field>
 
-    <button mat-mini-fab (click)="updateIconTest()">
-      <mat-icon aria-label="Show/hide disconnnected devices">text_format</mat-icon>
-    </button>
-
   </div>
   <!-- / HEADER -->
 
   <!-- CONTENT -->
 
- <div #gmap style="width:100%; height:100%; margin: 0; padding: 0">
- </div>
+  <div #gmap style="width:100%; height:100%; margin: 0; padding: 0">
+  </div>
+
+  <div id="cover-div" fxLayout="column" fxLayoutAlign="center end">
+    <button mat-mini-fab (click)="adjustZoomAccordingToTheMarkers()" matTooltip="{{ 'OPTION_PANEL.FIT_ZOOM_MARKERS' | translate }}">
+      <mat-icon aria-label="Adjust zoom according to the markers">center_focus_strong</mat-icon>
+    </button>
+    <button mat-mini-fab class="mat-grey-bg" (click)="showAndHideDisconnectedDevices()" *ngIf="showDisconnectedDevices" matTooltip="{{ 'OPTION_PANEL.HIDE_DISCONNECTED_DEVICE' | translate }}">
+      <mat-icon aria-label="Show/hide disconnnected devices">wifi</mat-icon>
+    </button>
+    <button mat-mini-fab color="accent" (click)="showAndHideDisconnectedDevices()" *ngIf="!showDisconnectedDevices" matTooltip="{{ 'OPTION_PANEL.SHOW_DISCONNECTED_DEVICE' | translate }}">
+      <mat-icon aria-label="Show/hide disconnnected devices">wifi</mat-icon>
+    </button>
+    <button mat-mini-fab (click)="updateMarkerClusterer()" *ngIf="false">
+      <mat-icon aria-label="Show/hide disconnnected devices">text_format</mat-icon>
+    </button>
+  </div>
+
 
 </div>
