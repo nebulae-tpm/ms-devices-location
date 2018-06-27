@@ -9,8 +9,8 @@ _This MicroService is built on top of NebulaE MicroService Framework.  Please se
 
 # Table of Contents
   * [Project Structure](#structure)
-  * [FrontEnd](#frontend) - not yet available  
-    *  [Environment variables](#frontend_env_vars) - not yet available  
+  * [FrontEnd](#frontend) 
+    *  [Devices location](#frontend_devices_location)
   * [API](#api)
     * [GraphQL throught Gateway API](#api_gateway_graphql)
   * [BackEnd](#backend)
@@ -43,6 +43,40 @@ _This MicroService is built on top of NebulaE MicroService Framework.  Please se
 │   └── images  
 ├── README.md                           => This doc
 ```
+
+# FrontEnd <a name="frontend"></a>
+In this section you can monitor all the devices that are registered on the platform and display their location on the map with detail information such as license plate, serial number, group name and date of the last reported position. You can also track an specified device and see its historical location which could be very useful if you want to track several devices at the same time.
+
+## Devices location <a name="frontend_devices_location"></a>
+
+If you want to navigate to this section, go to Devices > Location
+
+![Menu](docs/images/menu.png "Menu")
+
+This is the general view of the location section, all the devices that have reported its location are shown on the map and the detail information of each device can be accessed by clicking over one of the markers (As shown in the picture).
+
+![GeneralView](docs/images/general-view.png "GeneralView")
+
+If you want to track an specified device, the only thing you need to do is click over the follow vehicle option.
+
+![FollowDevice](docs/images/followDevice.png "FollowDevice")
+
+### Iconography <a name="emi_location_iconography"></a>
+
+The devices are represented on the map with a vehicle icon, the color of the icon can have different meanings:
+
+**Red icon:** The device is reporting an alarm (CPU usage alarm, temperature alarm, SD usage alarm, RAM usage alarm).
+
+![RedIcon](docs/images/busAlarmed.png "RedIcon")
+
+**Gray icon:** The device is not reporting its information , therefore it is consider as a offline device.
+
+![GrayIcon](docs/images/busOffline.png "GrayIcon")
+
+**Green icon:** The device is reporting information (events, state, location) and it is not alarmed.
+
+![GreenIcon](docs/images/busOnline.png "GreenIcon")
+
 
 # API <a name="api"></a>
 Exposed interfaces to send Commands and Queries by the CQRS principles.  
