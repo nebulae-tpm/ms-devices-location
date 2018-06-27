@@ -51,21 +51,15 @@ In this section you can monitor all the devices that are registered on the platf
 
 If you want to navigate to this section, go to Devices > Location
 
-<p align="center">
 ![Menu](docs/images/menu.png "Menu")
-</p>
 
 This is the general view of the location section, all the devices that have reported its location are shown on the map and the detail information of each device can be accessed by clicking over one of the markers (As shown in the picture).
 
-<p align="center">
 ![GeneralView](docs/images/general-view.png "GeneralView")
-</p>
 
 If you want to track an specified device, the only thing you need to do is click over the follow vehicle option.
 
-<p align="center">
 ![FollowDevice](docs/images/followDevice.png "FollowDevice")
-</p>
 
 ### Iconography <a name="emi_location_iconography"></a>
 
