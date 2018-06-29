@@ -77,6 +77,19 @@ The devices are represented on the map with a vehicle icon, the color of the ico
 
 ![GreenIcon](docs/images/busOnline.png "GreenIcon")
 
+### Filters <a name="emi_location_filters"></a>
+
+there are two kind of filters on the devices location view:
+
+Device filter: This filter helps to find devices by its hostname or serial number.
+
+![DeviceFilter](docs/images/device-filter.png "DeviceFilter")
+
+Device group filter: In order to see only the devices that belongs to an specified group name, you have to select which of the all group names you want to see and the devices corresponding to the selected group name will be reflected on the map.
+
+![DeviceGroupNameFilter](docs/images/device-group-filter.png "DeviceGroupNameFilter")
+
+![DeviceGroupNameFilter](docs/images/device-group-options.png "DeviceGroupNameFilter")
 
 # API <a name="api"></a>
 Exposed interfaces to send Commands and Queries by the CQRS principles.  
