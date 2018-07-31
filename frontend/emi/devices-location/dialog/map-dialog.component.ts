@@ -4,7 +4,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { DatePipe } from '@angular/common';
 import { MapRef } from "../entities/agmMapRef";
 import { MarkerRef, MarkerRefInfoWindowContent, MarkerRefTitleContent } from "../entities/markerRef";
-import { } from "googlemaps";
+/// <reference types="googlemaps" />
 import {
   Component,
   Inject,

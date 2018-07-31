@@ -16,9 +16,6 @@ import {
   ElementRef,
   NgZone
 } from "@angular/core";
-import { } from "google-maps";
-import { } from "googlemaps";
-import { } from "markerclustererplus";
 import { FormControl } from "@angular/forms";
 // tslint:disable-next-line:import-blacklist
 import * as Rx from "rxjs/Rx";
