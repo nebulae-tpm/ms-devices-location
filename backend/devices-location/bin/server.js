@@ -27,11 +27,4 @@ const start = () => {
 };
 
 start();
-// mongoDB.init$().subscribe(
-//     (str) => console.log(str),
-//     (error) => console.error(`Failed to connect to MongoDB`,error),
-//     () => console.log('Mongo db init completed')
-// );
-// graphQlService.start();
-// eventSourceService.start();
 

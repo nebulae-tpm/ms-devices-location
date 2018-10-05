@@ -64,5 +64,5 @@ broker.getMaterializedViewsUpdates$(['deviceLocationEvent']).subscribe(
     pubsub.publish('deviceLocationEvent', { deviceLocationEvent: evt.data });
   },
   (error) => console.error('Error listening deviceLocationEvent', error),
-  () => console.log('deviceLocationEvent listener STOPPED')
+  () => console.log('deviceLocationEvent listener STOPPED.')
 );
