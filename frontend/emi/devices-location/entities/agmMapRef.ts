@@ -1,4 +1,4 @@
-import {} from 'googlemaps';
+/// <reference types="googlemaps" />
 
 export class MapRef extends google.maps.Map {
 

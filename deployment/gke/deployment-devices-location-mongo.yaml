@@ -44,6 +44,10 @@ spec:
         volumeMounts:
         - name: dev-loc-mongo-persistent-storage
           mountPath: /data/db
+        resources:
+          requests:
+            cpu: "50m"
+
       volumes:
       - name: dev-loc-mongo-persistent-storage
         persistentVolumeClaim:
