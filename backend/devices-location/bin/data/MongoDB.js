@@ -56,6 +56,9 @@ class MongoDB {
         observer.next('Creating index for DevicesLocation.deviceState => ({ id: 1 }, { unique : true })');
         await this.db.collection('deviceState').createIndex( { id: 1 }, { unique : true });   
 
+        observer.next('Creating index for DevicesLocation.HistoricalDeviceLocation => ({ id: 1 })');
+        await this.db.collection('HistoricalDeviceLocation').createIndex( { id: 1 });   
+
         observer.next('All indexes created');
         observer.complete();
         });

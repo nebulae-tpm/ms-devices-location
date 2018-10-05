@@ -7,7 +7,6 @@ const Rx = require('rxjs');
 module.exports = {
   Query: {
     getDevicesLocation(root, args, context, fieldASTs) {
-      console.log('Graphql query getDevicesLocation ', new Date());
       return broker
         .forwardAndGetReply$(
           'Device',
@@ -19,7 +18,6 @@ module.exports = {
         .toPromise();
     },
     getDeviceGroups(root, args, context) {
-      console.log('Graphql query getDeviceGroups ', new Date());
       return broker
         .forwardAndGetReply$(
           'Device',
@@ -48,7 +46,6 @@ module.exports = {
 }
 
 function getResponseFromBackEnd$(response) {
-  console.log('getResponseFromBackEnd');
   return Rx.Observable.of(response)
     .map(resp => {
       if (resp.result.code != 200) {
@@ -64,7 +61,6 @@ function getResponseFromBackEnd$(response) {
 
 broker.getMaterializedViewsUpdates$(['deviceLocationEvent']).subscribe(
   evt => {
-    console.log("Subscription response1 => ", evt);
     pubsub.publish('deviceLocationEvent', { deviceLocationEvent: evt.data });
   },
   (error) => console.error('Error listening deviceLocationEvent', error),
