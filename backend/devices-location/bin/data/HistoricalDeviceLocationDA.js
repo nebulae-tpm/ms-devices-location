@@ -7,14 +7,12 @@ const collectionName = 'HistoricalDeviceLocation';
 class HistoricalDeviceLocationDA {
 
     /**
-     * Saves historical device location
+     * Saves historical device location.
      * @param {*} id Device ID
      * @param {*} count quantity of elements to return
      */
     static saveHistoricalDeviceLocation$(historicalDeviceLocation) {
-        const collection = mongoDB.db.collection(collectionName);
-        //return Rx.Observable.fromPromise(collection.insertOne(historicalDeviceLocation));
-
+        const collection = mongoDB.db.collection(collectionName);        
         return Rx.Observable.defer(() => collection.insertOne(historicalDeviceLocation));
     }
 
@@ -29,7 +27,6 @@ class HistoricalDeviceLocationDA {
         const sort = {"timestamp": -1} ;
         const collection = mongoDB.db.collection(collectionName);
 
-        //return Rx.Observable.fromPromise(collection.find({id: id}, jsonProjection).sort(sort).limit(count).toArray())
         return Rx.Observable.defer(() => collection.find({id: id}, jsonProjection).sort(sort).limit(count).toArray())        
         .mergeMap(historicalDevicesLocation => Rx.Observable.from(historicalDevicesLocation))
         .map(historicalDeviceLocation => {
@@ -51,7 +48,6 @@ class HistoricalDeviceLocationDA {
         const sort = {"timestamp": -1} ;
         const collection = mongoDB.db.collection(collectionName);
         
-        //return Rx.Observable.fromPromise(collection.find({id}, jsonProjection).sort(sort).toArray())
         return Rx.Observable.defer(() => collection.find({id}, jsonProjection).sort(sort).toArray())                
         .mergeMap(historicalDevicesLocation => Rx.Observable.from(historicalDevicesLocation))
         .map(historicalDeviceLocation => {
