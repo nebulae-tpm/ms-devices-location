@@ -4,7 +4,7 @@
         "src": "frontend/emi/devices-location",
         "assets" :"frontend/emi/assets/devices-location",
         "indexHeadAmends" : [
-            "<script src='https://maps.googleapis.com/maps/api/js?key=AIzaSyAWKVOt02pFVoLRe_zv0XJ_VpWnkKA7Txg&libraries=places' async defer></script>",
+            "<script src='https://maps.googleapis.com/maps/api/js?key=AIzaSyBktqvY5jde1Q5cHR7FwCCeiBSo4d5OOn8&libraries=places' async defer></script>",
             "<script src='./assets/devices-location/markerclusterer.js'></script>"
         ],
         "groups": [
