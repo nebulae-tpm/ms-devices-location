@@ -1,10 +1,24 @@
 'use strict'
 
-const mongoDB = require('./MongoDB')();
+let mongoDB = undefined;
 const Rx = require('rxjs');
 const collectionName = 'DeviceLocation';
 
 class DeviceDA {
+
+    static start$(mongoDbInstance) {
+        return Rx.Observable.create(observer => {
+          if (mongoDbInstance) {
+            mongoDB = mongoDbInstance;
+            observer.next("using given mongo instance");
+          } else {
+            mongoDB = require("./MongoDB").singleton();
+            observer.next("using singleton system-wide mongo instance");
+          }
+          observer.complete();
+        });
+      }
+    
 
     /**
    * Extracts the next value from a mongo cursos if available, returns undefined otherwise
@@ -149,4 +163,7 @@ class DeviceDA {
 
 }
 
+/**
+ * @returns {DeviceDA}
+ */
 module.exports = DeviceDA;

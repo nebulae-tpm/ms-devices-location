@@ -65,9 +65,7 @@ class Device {
             })
             .toArray()
             .mergeMap(rawResponse => this.buildSuccessResponse$(rawResponse))
-            .catch(err => {
-                return this.errorHandler$(err);
-            });
+            .catch(err => this.errorHandler$(err));
     }
 
     /**
@@ -213,9 +211,9 @@ class Device {
                 locationPath: historicalDeviceLocation
             }
             return deviceLocationReportedEvent;
-        }).mergeMap(formattedLoc => {
-            return broker.send$(MATERIALIZED_VIEW_TOPIC, 'deviceLocationEvent', formattedLoc);
-        });
+        }).mergeMap(formattedLoc => 
+            broker.send$(MATERIALIZED_VIEW_TOPIC, 'deviceLocationEvent', formattedLoc)
+        );
     }
 
     /**
@@ -270,14 +268,10 @@ class Device {
      * @param {*} rawResponse 
      */
     buildSuccessResponse$(rawResponse) {
-        return Rx.Observable.of(rawResponse).map(resp => {
-          return {
+        return Rx.Observable.of(rawResponse).map(resp => ({
             data: resp,
-            result: {
-              code: 200
-            }
-          };
-        });
+            result: { code: 200 }
+        }))
     }
 
     /**
@@ -323,6 +317,9 @@ class Device {
     }
 }
 
+/**
+ * @returns {Device}
+ */
 module.exports = () => {
     if (!instance) {
         instance = new Device();

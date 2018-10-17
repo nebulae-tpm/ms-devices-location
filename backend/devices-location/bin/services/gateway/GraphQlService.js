@@ -31,60 +31,37 @@ class GraphQlService {
 
 
           return Rx.Observable.from(this.aggregateEventsArray)
-            .map(aggregateEvent => {
-                return { ...aggregateEvent, onErrorHandler, onCompleteHandler };
-            })
+            .map(aggregateEvent => ({ ...aggregateEvent, onErrorHandler, onCompleteHandler }) )
             .map(params => this.subscribeEventHandler(params));
     }
 
-    subscribeEventHandler({
-        aggregateType,
-        messageType,
-        onErrorHandler,
-        onCompleteHandler
-      }) {
-        const handler = this.functionMap[messageType];
-        const subscription = broker
-          .getMessageListener$([aggregateType], [messageType])
-          //decode and verify the jwt token
-          .map(message => {
-            return {
-              authToken: jsonwebtoken.verify(message.data.jwt, jwtPublicKey),
-              message
-            };
-          })
+  subscribeEventHandler({
+    aggregateType,
+    messageType,
+    onErrorHandler,
+    onCompleteHandler
+  }) {
+    const handler = this.functionMap[messageType];
+    const subscription = broker
+      .getMessageListener$([aggregateType], [messageType])
+      .mergeMap(message => this.verifyRequest$(message))
+      .mergeMap(request => (request.failedValidations.length > 0)
+        ? Rx.Observable.of(request.errorResponse)
+        : Rx.Observable.of(request)
           //ROUTE MESSAGE TO RESOLVER
           .mergeMap(({ authToken, message }) =>
             handler.fn
               .call(handler.obj, message.data, authToken)
-              .map(response => {
-                return {
-                  response,
-                  correlationId: message.id,
-                  replyTo: message.attributes.replyTo
-                };
-              })
+              .map(response => ({ response, correlationId: message.id, replyTo: message.attributes.replyTo }))
           )
-          //send response back if neccesary
-          .mergeMap(({ response, correlationId, replyTo }) => {
-            if (replyTo) {
-              return broker.send$(
-                replyTo,
-                'gateway.graphql.Query.response',
-                response,
-                { correlationId }
-              );
-            } else {
-              return Rx.Observable.of(undefined);
-            }
-          })
-          .subscribe(
-            msg => {
-              console.log(`GraphQlService process: ${msg}`);
-            },
-            onErrorHandler,
-            onCompleteHandler
-          );
+      )
+      .mergeMap(msg => this.sendResponseBack$(msg))
+      .subscribe(
+        msg => { /* console.log(`GraphQlService: ${messageType} process: ${msg}`); */ },
+        onErrorHandler,
+        onCompleteHandler
+      );
+        
         this.subscriptions.push({
           aggregateType,
           messageType,
@@ -97,6 +74,41 @@ class GraphQlService {
           handlerName: `${handler.obj.name}.${handler.fn.name}`
         };
       }
+
+  /**
+   * send response back if neccesary
+   * @param {any} msg Object with data necessary  to send response
+   */
+  sendResponseBack$(msg) {
+    return Rx.Observable.of(msg)
+      .mergeMap(({ response, correlationId, replyTo }) =>
+        replyTo
+          ? broker.send$( replyTo, "gateway.graphql.Query.response", response,  { correlationId } )
+          : Rx.Observable.of(undefined)
+      )
+  }
+
+  /**
+   * Verify the message if the request is valid.
+   * @param {any} request request message
+   * @returns { Rx.Observable< []{request: any, failedValidations: [] }>}  Observable object that containg the original request and the failed validations
+   */
+  verifyRequest$(request) {
+    return Rx.Observable.of(request)
+      //decode and verify the jwt token
+      .mergeMap(message =>
+        Rx.Observable.of(message)
+          .map(message => ({ authToken: jsonwebtoken.verify(message.data.jwt, jwtPublicKey), message, failedValidations: [] }))
+          .catch(err =>
+            EventSourcingMonitor.errorHandler$(err)
+              .map(response => ({
+                errorResponse: { response, correlationId: message.id, replyTo: message.attributes.replyTo },
+                failedValidations: ['JWT']
+              }
+              ))
+          )
+      )
+  }
 
     stop$() {
         return Rx.Observable.create(observer => {
@@ -131,6 +143,9 @@ class GraphQlService {
 
 }
 
+/**
+ * @returns {GraphQlService}
+ */
 module.exports = () => {
     if (!instance) {
         instance = new GraphQlService();
