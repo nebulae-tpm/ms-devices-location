@@ -100,7 +100,7 @@ class GraphQlService {
         Rx.Observable.of(message)
           .map(message => ({ authToken: jsonwebtoken.verify(message.data.jwt, jwtPublicKey), message, failedValidations: [] }))
           .catch(err =>
-            EventSourcingMonitor.errorHandler$(err)
+            device.errorHandler$(err)
               .map(response => ({
                 errorResponse: { response, correlationId: message.id, replyTo: message.attributes.replyTo },
                 failedValidations: ['JWT']
@@ -136,8 +136,14 @@ class GraphQlService {
     */
    generateAggregateEventsArray() {
     return [
-        { aggregateType: 'Device', messageType: 'gateway.graphql.query.getDevicesLocation' },
-        { aggregateType: 'Device', messageType: 'gateway.graphql.query.getDeviceGroups' }
+        { 
+          aggregateType: 'Device',
+          messageType: 'gateway.graphql.query.getDevicesLocation' 
+        },
+        { 
+          aggregateType: 'Device',
+          messageType: 'gateway.graphql.query.getDeviceGroups' 
+        }
     ];
 }
 
