@@ -61,6 +61,7 @@ function getResponseFromBackEnd$(response) {
 
 broker.getMaterializedViewsUpdates$(['deviceLocationEvent']).subscribe(
   evt => {
+    
     pubsub.publish('deviceLocationEvent', { deviceLocationEvent: evt.data });
   },
   (error) => console.error('Error listening deviceLocationEvent', error),

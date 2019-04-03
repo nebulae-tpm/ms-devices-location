@@ -69,7 +69,7 @@ class EventStoreService {
                 ))
                 .subscribe(
                     (evt) => {
-                        //console.log(`EventStoreService: ${eventType} process: ${JSON.stringify(evt)}`)
+                        //console.log(`EventStoreService: ${eventType} process: ${JSON.stringify(evt)}`);
                     },
                     onErrorHandler,
                     onCompleteHandler

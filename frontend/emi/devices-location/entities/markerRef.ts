@@ -123,7 +123,6 @@ export class MarkerRef extends google.maps.Marker {
     } else {
       newIconUrl = "./assets/devices-location/busOffline.svg";
     }
-
     // console.log(" Icon: ", newIconUrl, (newIconUrl != this.iconUrl), " Vehicle: ", this.vehicle);
 
     // if(this.iconUrl == "./assets/devices-location/busOnline.svg"){
